@@ -1,0 +1,6 @@
+@TTTBackend_HostAddress = http://localhost:5091
+
+GET {{TTTBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
