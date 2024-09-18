@@ -1,0 +1,12 @@
+﻿@using Shared.Models
+
+<div class="mt-4 mx-5">
+	<div class="d-flex justify-content-center border py-5 lh-tight scene-hover-effect">
+		<h5 class="m-0 my-3">@Scene.Name</h5>
+	</div>
+</div>
+
+@code {
+    [Parameter]
+    public Scene Scene { get; set; }
+}

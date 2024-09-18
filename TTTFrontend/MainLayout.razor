@@ -1,12 +1,14 @@
 ﻿@inherits LayoutComponentBase
+@using TTTFrontend.Components.Layout
+
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
+    <div>
+         <SidebarComponent />
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div>
+            <NavBarComponent/>
         </div>
 
         <article class="content px-4">
