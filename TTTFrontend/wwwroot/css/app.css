@@ -101,7 +101,3 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
-
-.scene-hover-effect:hover {
-    border-color: black;
-}

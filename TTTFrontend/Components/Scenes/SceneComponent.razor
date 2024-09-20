@@ -1,8 +1,10 @@
 ﻿@using Shared.Models
 
 <div class="mt-4 mx-5">
-	<div class="d-flex justify-content-center border py-5 lh-tight scene-hover-effect">
-		<h5 class="m-0 my-3">@Scene.Name</h5>
+	<div class="scene-hover-effect">
+		<div class="d-flex justify-content-center border py-5 lh-tight">
+			<h5 class="m-0 my-3">@Scene.Name</h5>
+		</div>
 	</div>
 </div>
 
@@ -10,3 +12,14 @@
     [Parameter]
     public Scene Scene { get; set; }
 }
+
+<style>
+	.scene-hover-effect {
+		background-color: rgba(0, 0, 0, 0);
+		transition: background-color 0.3s ease;
+	}
+
+	.scene-hover-effect:hover {
+		background-color: rgba(0, 0, 0, 0.10);
+	}
+</style>
