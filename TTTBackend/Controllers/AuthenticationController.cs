@@ -17,48 +17,33 @@ public class AuthenticationController : ControllerBase
 		_authService = authService;
 	}
 
-	/*
-	[HttpPost("login")]
-	public IActionResult Login([FromBody] UserLoginDTO loginModel)
-	{
-		// Test the login credentials (hardcoded for simplicity)
-		if (loginModel.Username != "testuser" || loginModel.Password != "password123")
-		{
-			return Unauthorized("Invalid credentials");
-		}
-
-		// Retrieve the secret key directly from environment variables
-		var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
-		Console.WriteLine($"Secret Key in Controller: {secretKey}"); // Debugging purpose
-		if (string.IsNullOrEmpty(secretKey))
-		{
-			throw new InvalidOperationException("JWT secret key is not set in the .env file.");
-		}
-
-		// Generate JWT Token
-		var token = GenerateJwtToken(loginModel.Username, secretKey);
-
-		// Return the generated token
-		return Ok(new { Token = token });
-	}
-	*/
-
 	[HttpPost("register")]
 	public async Task<IActionResult> Register([FromBody] UserRegistrationDTO registrationDTO)
 	{
-		// Call the service method and receive a tuple result
 		var (success, errorMessage) = await _authService.RegisterUserAsync(registrationDTO);
 
-		// Check if registration succeeded
 		if (success)
 		{
 			return Ok(new { message = "User registered successfully" });
 		}
 		else
 		{
-			// Return a bad request with the specific error message
 			return BadRequest(new { error = errorMessage });
 		}
+	}
+
+	[HttpPost("login")]
+	public async Task<IActionResult> Login([FromBody] UserLoginDTO loginModel)
+	{
+		var result = await _authService.ValidateUserAsync(loginModel);
+
+		if (!result.Success)
+		{
+			return Unauthorized(result.ErrorMessage);
+		}
+
+		var token = _authService.GenerateJwtToken(result.Username);
+		return Ok(new { Token = token });
 	}
 
 	private string GenerateJwtToken(string username, string secretKey)

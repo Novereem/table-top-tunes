@@ -1,4 +1,5 @@
-﻿using Shared.Models.DTOs;
+﻿using Shared.Models;
+using Shared.Models.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,8 @@ namespace Shared.Interfaces.Data
 {
 	public interface IAuthenticationData
 	{
-		Task RegisterUserAsync(UserRegistrationDTO registrationDTO);
+		public Task RegisterUserAsync(User user);
+
+		public Task<User> GetUserByUsernameAsync(string username);
 	}
 }

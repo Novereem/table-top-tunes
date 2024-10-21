@@ -10,6 +10,8 @@ namespace Shared.Interfaces.Services
     public interface IAuthenticationService
     {
 		public Task<(bool Success, string ErrorMessage)> RegisterUserAsync(UserRegistrationDTO registrationDTO);
+		public Task<(bool Success, string Username, string ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO);
+		public string GenerateJwtToken(string username);
 
 	}
 }

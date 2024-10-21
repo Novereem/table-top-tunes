@@ -1,10 +1,11 @@
-﻿using Shared.Interfaces.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Shared.Interfaces.Data;
 using Shared.Models;
 using Shared.Models.DTOs;
 
 namespace TTTBackend.Data
 {
-	public class AuthenticationData// : IAuthenticationData
+	public class AuthenticationData : IAuthenticationData
 	{
 		private readonly ApplicationDbContext _dbContext;
 
@@ -17,6 +18,11 @@ namespace TTTBackend.Data
 		{
 			_dbContext.Users.Add(user);
 			await _dbContext.SaveChangesAsync();
+		}
+
+		public async Task<User> GetUserByUsernameAsync(string username)
+		{
+			return await _dbContext.Users.SingleOrDefaultAsync(u => u.Username == username);
 		}
 	}
 }
