@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.Models
+namespace Shared.Models.Common
 {
-    public class Scene
+    public abstract class BaseEntity
     {
+        [Key]
         public Guid Id { get; set; }
-        public string Name { get; set; }
 
-        public Scene(string name)
+        public BaseEntity()
         {
             Id = Guid.NewGuid();
-            Name = name;
         }
     }
 }
