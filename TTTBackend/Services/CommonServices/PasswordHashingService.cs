@@ -1,8 +1,9 @@
 ﻿using BCrypt.Net;
+using Shared.Interfaces.Services;
 
 namespace TTTBackend.Services.CommonServices
 {
-	public class PasswordHashingService
+	public class PasswordHashingService : IPasswordHashingService
 	{
 		// Hash a password with a salt
 		public string HashPassword(string password)

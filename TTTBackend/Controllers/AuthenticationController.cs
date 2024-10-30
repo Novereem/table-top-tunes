@@ -45,26 +45,4 @@ public class AuthenticationController : ControllerBase
 		var token = _authService.GenerateJwtToken(result.Username);
 		return Ok(new { Token = token });
 	}
-
-	private string GenerateJwtToken(string username, string secretKey)
-	{
-		var claims = new[]
-		{
-			new Claim(JwtRegisteredClaimNames.Sub, username),
-			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-		};
-
-		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-		var token = new JwtSecurityToken(
-			issuer: Environment.GetEnvironmentVariable("JWT_ISSUER"),
-			audience: Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
-			claims: claims,
-			expires: DateTime.Now.AddMinutes(30), // Token expires in 30 minutes
-			signingCredentials: creds
-		);
-
-		return new JwtSecurityTokenHandler().WriteToken(token);
-	}
 }

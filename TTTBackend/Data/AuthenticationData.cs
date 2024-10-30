@@ -20,9 +20,14 @@ namespace TTTBackend.Data
 			await _dbContext.SaveChangesAsync();
 		}
 
-		public async Task<User> GetUserByUsernameAsync(string username)
+		public async Task<User?> GetUserByUsernameAsync(string username)
 		{
 			return await _dbContext.Users.SingleOrDefaultAsync(u => u.Username == username);
 		}
-	}
+
+        public async Task<User?> GetUserByEmailAsync(string email)
+        {
+            return await _dbContext.Users.SingleOrDefaultAsync(u => u.Email == email);
+        }
+    }
 }

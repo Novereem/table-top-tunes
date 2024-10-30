@@ -11,11 +11,13 @@ namespace Shared.Models
     public class User : BaseEntity
 	{
 		public string Username { get; set; }
+		public string Email { get; set; }
 		public string PasswordHash { get; set; }
 
-		public User(string username, string passwordHash)
+		public User(string username, string email, string passwordHash)
 		{
 			Username = username;
+			Email = email;
 			PasswordHash = passwordHash;
 		}
 	}

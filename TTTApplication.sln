@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTTBackend", "TTTBackend\TT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{C7B29755-B556-400F-B104-56566330F63F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTTBackend.Tests", "TTTBackend.Tests\TTTBackend.Tests.csproj", "{BF6239CA-4A01-41CF-8AF0-28ECD55198B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TTTFrontend.Tests", "TTTFrontend.Tests\TTTFrontend.Tests.csproj", "{5D99D841-A69F-498F-9990-9D965901B89C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{C7B29755-B556-400F-B104-56566330F63F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7B29755-B556-400F-B104-56566330F63F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7B29755-B556-400F-B104-56566330F63F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF6239CA-4A01-41CF-8AF0-28ECD55198B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF6239CA-4A01-41CF-8AF0-28ECD55198B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF6239CA-4A01-41CF-8AF0-28ECD55198B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF6239CA-4A01-41CF-8AF0-28ECD55198B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D99D841-A69F-498F-9990-9D965901B89C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D99D841-A69F-498F-9990-9D965901B89C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D99D841-A69F-498F-9990-9D965901B89C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D99D841-A69F-498F-9990-9D965901B89C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

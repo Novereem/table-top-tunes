@@ -7,15 +7,16 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Shared.Interfaces.Data;
 
 namespace TTTBackend.Services
 {
     public class AuthenticationService : IAuthenticationService
 	{
-		private readonly AuthenticationData _authData;
-		private readonly PasswordHashingService _passwordHashingService;
+		private readonly IAuthenticationData _authData;
+		private readonly IPasswordHashingService _passwordHashingService;
 
-		public AuthenticationService(AuthenticationData authData, PasswordHashingService passwordHashingService)
+		public AuthenticationService(IAuthenticationData authData, IPasswordHashingService passwordHashingService)
 		{
 			_authData = authData;
 			_passwordHashingService = passwordHashingService;
@@ -23,11 +24,23 @@ namespace TTTBackend.Services
 
 		public async Task<(bool Success, string ErrorMessage)> RegisterUserAsync(UserRegistrationDTO registrationDTO)
 		{
-			try
+			//Password strength, length and email format are checked in the frontend
+			//Email 2 author authentication needs to be implemented in the final product
+
+            if (await _authData.GetUserByUsernameAsync(registrationDTO.Username) != null)
+            {
+                return (false, "Username is already taken");
+            }
+            if (await _authData.GetUserByEmailAsync(registrationDTO.Email) != null)
+            {
+                return (false, "Email is already registered");
+            }
+
+            try
 			{
 				// Hash the password
 				var passwordHash = _passwordHashingService.HashPassword(registrationDTO.Password);
-				var user = new User(registrationDTO.Username, passwordHash);
+				var user = new User(registrationDTO.Username, registrationDTO.Email, passwordHash);
 
 				// Save the user to the database
 				await _authData.RegisterUserAsync(user);
@@ -35,7 +48,6 @@ namespace TTTBackend.Services
 			}
 			catch (Exception ex)
 			{
-				// Handle specific exceptions and log them if necessary
 				return (false, ex.Message);
 			}
 		}
