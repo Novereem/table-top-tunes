@@ -30,8 +30,8 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Publish the project
-        run: dotnet publish --no-restore --configuration Release
+      - name: Build 
+        run: dotnet build --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test --no-build --framework net8.0 --verbosity normal --diag:log.txt
+        run: dotnet test --configuration Release --no-build --framework net8.0 --verbosity normal
