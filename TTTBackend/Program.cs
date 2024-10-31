@@ -8,6 +8,7 @@ using TTTBackend.Data;
 using TTTBackend.Services.CommonServices;
 using Shared.Interfaces.Services;
 using TTTBackend.Services;
+using Shared.Interfaces.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,8 +17,8 @@ DotNetEnv.Env.Load();
 
 // Services Registration
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddScoped<PasswordHashingService>();
-builder.Services.AddScoped<AuthenticationData>();
+builder.Services.AddScoped<IAuthenticationData, AuthenticationData>();
+builder.Services.AddScoped<IPasswordHashingService, PasswordHashingService>();
 
 // CORS Policy
 builder.Services.AddCors(options =>
