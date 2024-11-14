@@ -9,6 +9,8 @@ using Shared.Models.DTOs;
 using Shared.Models;
 using Shared.Interfaces.Services;
 using Shared.Models.Extensions;
+using Shared.Constants;
+using Shared.Enums;
 
 namespace TTTBackend.Tests
 {
@@ -61,7 +63,7 @@ namespace TTTBackend.Tests
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("Username is already taken", result.ErrorMessage);
+            Assert.Equal(ErrorMessages.GetErrorMessage(ErrorCode.UsernameTaken), result.ErrorMessage);
         }
 
         [Fact]
@@ -78,11 +80,11 @@ namespace TTTBackend.Tests
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("Email is already registered", result.ErrorMessage);
+            Assert.Equal(ErrorMessages.GetErrorMessage(ErrorCode.EmailAlreadyRegistered), result.ErrorMessage);
         }
 
         [Fact]
-        public async Task RegisterUserAsync_ShouldReturnFailure_WhenExceptionIsThrown()
+        public async Task RegisterUserAsync_ShouldReturnUnknownError_WhenUnexpectedExceptionIsThrown()
         {
             // Arrange
             var registrationDTO = new UserRegistrationDTO
@@ -92,20 +94,16 @@ namespace TTTBackend.Tests
                 Password = "password"
             };
 
-            // Mock HashPassword to throw an exception
-            _mockPasswordHashingService
-                .Setup(p => p.HashPassword(It.IsAny<string>()))
-                .Throws(new Exception("Database error"));
+            // Mock the method to throw an unexpected exception
+            _mockAuthData.Setup(a => a.RegisterUserAsync(It.IsAny<User>()))
+                .Throws(new Exception("Unexpected error"));
 
             // Act
             var result = await _authService.RegisterUserAsync(registrationDTO);
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("Database error", result.ErrorMessage);
-
-            // Verify that HashPassword was called
-            _mockPasswordHashingService.Verify(p => p.HashPassword(It.IsAny<string>()), Times.Once);
+            Assert.Equal(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError), result.ErrorMessage);
         }
 
         // Login Tests
@@ -144,7 +142,7 @@ namespace TTTBackend.Tests
             // Assert
             Assert.False(result.Success);
             Assert.Null(result.Username);
-            Assert.Equal("Invalid credentials", result.ErrorMessage);
+            Assert.Equal(ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials), result.ErrorMessage);
         }
 
         [Fact]
@@ -161,7 +159,7 @@ namespace TTTBackend.Tests
             // Assert
             Assert.False(result.Success);
             Assert.Null(result.Username);
-            Assert.Equal("Invalid credentials", result.ErrorMessage);
+            Assert.Equal(ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials), result.ErrorMessage);
         }
 
         // JWT Token Tests

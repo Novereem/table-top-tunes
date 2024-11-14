@@ -9,6 +9,8 @@ using System.Security.Claims;
 using System.Text;
 using Shared.Interfaces.Data;
 using Shared.Models.Extensions;
+using Shared.Constants;
+using Shared.Enums;
 
 namespace TTTBackend.Services
 {
@@ -25,29 +27,32 @@ namespace TTTBackend.Services
 
         public async Task<(bool Success, string ErrorMessage)> RegisterUserAsync(UserRegistrationDTO registrationDTO)
         {
-            try
-            {
-                // Convert the DTO to a User model using the extension method
-                var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
+			try
+			{
+				// Convert the DTO to a User model using the extension method
+				var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
 
-                // Check if username or email is already taken
-                if (await _authData.GetUserByUsernameAsync(newUser.Username) != null)
-                {
-                    return (false, "Username is already taken");
-                }
-                if (await _authData.GetUserByEmailAsync(newUser.Email) != null)
-                {
-                    return (false, "Email is already registered");
-                }
+				// Check if username or email is already taken
+				if (await _authData.GetUserByUsernameAsync(newUser.Username) != null)
+				{
+					return (false, ErrorMessages.GetErrorMessage(ErrorCode.UsernameTaken));
+				}
+				if (await _authData.GetUserByEmailAsync(newUser.Email) != null)
+				{
+					return (false, ErrorMessages.GetErrorMessage(ErrorCode.EmailAlreadyRegistered));
+				}
 
-                // Save the user to the database
-                await _authData.RegisterUserAsync(newUser);
-                return (true, "Successful Registration");
+				// Save the user to the database
+				await _authData.RegisterUserAsync(newUser);
+				return (true, "Successful Registration");
+			}
+			catch (Exception ex)
+			{
+				//The exception could be logged in the future
+
+                return (false, ErrorMessages.GetErrorMessage(ErrorCode.UnknownError));
             }
-            catch (Exception ex)
-            {
-                return (false, ex.Message);
-            }
+            
         }
 
         public async Task<(bool Success, string Username, string ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
@@ -60,7 +65,7 @@ namespace TTTBackend.Services
             // Validate user credentials
             if (user == null || !_passwordHashingService.VerifyPassword(loginDTO.Password, user.PasswordHash))
             {
-                return (false, null, "Invalid credentials");
+                return (false, null, ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials));
             }
 
             return (true, user.Username, null);
