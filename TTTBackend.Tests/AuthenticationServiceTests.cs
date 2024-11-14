@@ -43,7 +43,7 @@ namespace TTTBackend.Tests
 
             // Assert
             Assert.True(result.Success);
-            Assert.Equal("Succesful Registration", result.ErrorMessage);
+            Assert.Equal("Successful Registration", result.ErrorMessage);
             _mockAuthData.Verify(a => a.RegisterUserAsync(It.IsAny<User>()), Times.Once);
         }
 
@@ -85,9 +85,16 @@ namespace TTTBackend.Tests
         public async Task RegisterUserAsync_ShouldReturnFailure_WhenExceptionIsThrown()
         {
             // Arrange
-            var registrationDTO = new UserRegistrationDTO { Username = "testuser", Email = "test@example.com", Password = "password" };
+            var registrationDTO = new UserRegistrationDTO
+            {
+                Username = "testuser",
+                Email = "test@example.com",
+                Password = "password"
+            };
 
-            _mockPasswordHashingService.Setup(p => p.HashPassword(registrationDTO.Password))
+            // Mock HashPassword to throw an exception
+            _mockPasswordHashingService
+                .Setup(p => p.HashPassword(It.IsAny<string>()))
                 .Throws(new Exception("Database error"));
 
             // Act
@@ -96,6 +103,9 @@ namespace TTTBackend.Tests
             // Assert
             Assert.False(result.Success);
             Assert.Equal("Database error", result.ErrorMessage);
+
+            // Verify that HashPassword was called
+            _mockPasswordHashingService.Verify(p => p.HashPassword(It.IsAny<string>()), Times.Once);
         }
 
         // Login Tests

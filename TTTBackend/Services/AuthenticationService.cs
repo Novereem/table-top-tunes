@@ -23,35 +23,34 @@ namespace TTTBackend.Services
 			_passwordHashingService = passwordHashingService;
 		}
 
-		public async Task<(bool Success, string ErrorMessage)> RegisterUserAsync(UserRegistrationDTO registrationDTO)
-		{
-            //Password strength, length and email format are checked in the frontend
-            //Email 2 author authentication needs to be implemented in the final product
-
-            var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
-
-            if (await _authData.GetUserByUsernameAsync(newUser.Username) != null)
-            {
-                return (false, "Username is already taken");
-            }
-            if (await _authData.GetUserByEmailAsync(newUser.Email) != null)
-            {
-                return (false, "Email is already registered");
-            }
-
+        public async Task<(bool Success, string ErrorMessage)> RegisterUserAsync(UserRegistrationDTO registrationDTO)
+        {
             try
-			{
-				// Save the user to the database
-				await _authData.RegisterUserAsync(newUser);
-				return (true, "Succesful Registration");
-			}
-			catch (Exception ex)
-			{
-				return (false, ex.Message);
-			}
-		}
+            {
+                // Convert the DTO to a User model using the extension method
+                var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
 
-		public async Task<(bool Success, string Username, string ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
+                // Check if username or email is already taken
+                if (await _authData.GetUserByUsernameAsync(newUser.Username) != null)
+                {
+                    return (false, "Username is already taken");
+                }
+                if (await _authData.GetUserByEmailAsync(newUser.Email) != null)
+                {
+                    return (false, "Email is already registered");
+                }
+
+                // Save the user to the database
+                await _authData.RegisterUserAsync(newUser);
+                return (true, "Successful Registration");
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+
+        public async Task<(bool Success, string Username, string ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
 		{
             var loginUser = loginDTO.ToUserFromLoginDTO(_passwordHashingService);
 
