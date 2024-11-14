@@ -1,15 +1,26 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
 @using TTTFrontend.Components.Layout
 
+@code {
+    private bool HideLayout => Navigation.Uri.EndsWith("/login") || Navigation.Uri.EndsWith("/register");
+}
+
 <div class="page">
-    <div>
-         <SidebarComponent />
-    </div>
+    @if (!HideLayout)
+    {
+        <div>
+            <SidebarComponent />
+        </div>
+    }
 
     <main>
-        <div>
-            <NavBarComponent/>
-        </div>
+        @if (!HideLayout)
+        {
+            <div>
+                <NavBarComponent />
+            </div>
+        }
 
         <div>
             @Body
