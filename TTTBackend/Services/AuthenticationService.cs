@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Shared.Interfaces.Data;
+using Shared.Models.Extensions;
 
 namespace TTTBackend.Services
 {
@@ -24,26 +25,24 @@ namespace TTTBackend.Services
 
 		public async Task<(bool Success, string ErrorMessage)> RegisterUserAsync(UserRegistrationDTO registrationDTO)
 		{
-			//Password strength, length and email format are checked in the frontend
-			//Email 2 author authentication needs to be implemented in the final product
+            //Password strength, length and email format are checked in the frontend
+            //Email 2 author authentication needs to be implemented in the final product
 
-            if (await _authData.GetUserByUsernameAsync(registrationDTO.Username) != null)
+            var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
+
+            if (await _authData.GetUserByUsernameAsync(newUser.Username) != null)
             {
                 return (false, "Username is already taken");
             }
-            if (await _authData.GetUserByEmailAsync(registrationDTO.Email) != null)
+            if (await _authData.GetUserByEmailAsync(newUser.Email) != null)
             {
                 return (false, "Email is already registered");
             }
 
             try
 			{
-				// Hash the password
-				var passwordHash = _passwordHashingService.HashPassword(registrationDTO.Password);
-				var user = new User(registrationDTO.Username, registrationDTO.Email, passwordHash);
-
 				// Save the user to the database
-				await _authData.RegisterUserAsync(user);
+				await _authData.RegisterUserAsync(newUser);
 				return (true, "Succesful Registration");
 			}
 			catch (Exception ex)
@@ -54,15 +53,19 @@ namespace TTTBackend.Services
 
 		public async Task<(bool Success, string Username, string ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
 		{
-			var user = await _authData.GetUserByUsernameAsync(loginDTO.Username);
+            var loginUser = loginDTO.ToUserFromLoginDTO(_passwordHashingService);
 
-			if (user == null || !_passwordHashingService.VerifyPassword(loginDTO.Password, user.PasswordHash))
-			{
-				return (false, null, "Invalid credentials");
-			}
+            // Fetch the user from the database by username
+            var user = await _authData.GetUserByUsernameAsync(loginUser.Username);
 
-			return (true, user.Username, null);
-		}
+            // Validate user credentials
+            if (user == null || !_passwordHashingService.VerifyPassword(loginDTO.Password, user.PasswordHash))
+            {
+                return (false, null, "Invalid credentials");
+            }
+
+            return (true, user.Username, null);
+        }
 
 		public string GenerateJwtToken(string username)
 		{

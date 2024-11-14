@@ -20,5 +20,5 @@ namespace Shared.Models
 			Email = email;
 			PasswordHash = passwordHash;
 		}
-	}
+    }
 }

@@ -8,7 +8,7 @@ using TTTBackend.Services.CommonServices;
 using Shared.Models.DTOs;
 using Shared.Models;
 using Shared.Interfaces.Services;
-
+using Shared.Models.Extensions;
 
 namespace TTTBackend.Tests
 {
@@ -25,7 +25,7 @@ namespace TTTBackend.Tests
             _authService = new AuthenticationService(_mockAuthData.Object, _mockPasswordHashingService.Object);
         }
 
-        //Registering
+        // Registering Tests
         [Fact]
         public async Task RegisterUserAsync_ShouldReturnSuccess_WhenUserIsRegistered()
         {
@@ -52,7 +52,7 @@ namespace TTTBackend.Tests
         {
             // Arrange
             var registrationDTO = new UserRegistrationDTO { Username = "testuser", Email = "test@example.com", Password = "password" };
-            var existingUser = new User("testuser", "test@example.com", "hashedPassword");
+            var existingUser = registrationDTO.ToUserFromRegistrationDTO(_mockPasswordHashingService.Object);
 
             _mockAuthData.Setup(a => a.GetUserByUsernameAsync(registrationDTO.Username)).ReturnsAsync(existingUser);
 
@@ -69,7 +69,7 @@ namespace TTTBackend.Tests
         {
             // Arrange
             var registrationDTO = new UserRegistrationDTO { Username = "testuser", Email = "test@example.com", Password = "password" };
-            var existingUser = new User("anotheruser", "test@example.com", "hashedPassword");
+            var existingUser = registrationDTO.ToUserFromRegistrationDTO(_mockPasswordHashingService.Object);
 
             _mockAuthData.Setup(a => a.GetUserByEmailAsync(registrationDTO.Email)).ReturnsAsync(existingUser);
 
@@ -98,7 +98,7 @@ namespace TTTBackend.Tests
             Assert.Equal("Database error", result.ErrorMessage);
         }
 
-        //Logging in
+        // Login Tests
         [Fact]
         public async Task ValidateUserAsync_ShouldReturnSuccess_WhenCredentialsAreValid()
         {
@@ -154,12 +154,12 @@ namespace TTTBackend.Tests
             Assert.Equal("Invalid credentials", result.ErrorMessage);
         }
 
-        //JWT Tokens
+        // JWT Token Tests
         [Fact]
         public void GenerateJwtToken_ShouldReturnToken_WhenSecretIsSet()
         {
             // Arrange
-            Environment.SetEnvironmentVariable("JWT_SECRET_KEY", "cf3894f72d9440798a9542f060988572randomtoken"); // Ensure it's 16+ characters
+            Environment.SetEnvironmentVariable("JWT_SECRET_KEY", "cf3894f72d9440798a9542f060988572randomtoken");
             Environment.SetEnvironmentVariable("JWT_ISSUER", "my_issuer");
             Environment.SetEnvironmentVariable("JWT_AUDIENCE", "my_audience");
 
