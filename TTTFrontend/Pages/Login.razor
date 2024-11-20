@@ -1,7 +1,54 @@
 ﻿@page "/login"
+@using System.Net.Http.Json
+@using Shared.Models.DTOs
+@using TTTFrontend.Services
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
+@inject AuthenticationService AuthService
 
 <h3>Login</h3>
 
-@code {
+<EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
+    <div>
+        <label>Username:</label>
+        <InputText @bind-Value="loginModel.Username" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="loginModel.Password" type="password" />
+    </div>
+
+    <button type="submit">Login</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@code {
+    private UserLoginDTO loginModel = new UserLoginDTO();
+    private string errorMessage;
+
+    private async Task HandleLogin()
+    {
+        var response = await AuthService.Login(loginModel);
+        if (response.Success)
+        {
+            // Store the token in local storage
+            LocalStorage.SetItem("authToken", response.Token);
+
+            // Navigate to the home page after successful login
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            // Display the error message returned from the API response
+            errorMessage = response.ErrorMessage;
+        }
+    }
 }
