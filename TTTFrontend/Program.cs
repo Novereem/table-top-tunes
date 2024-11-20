@@ -15,6 +15,14 @@ builder.Services.AddScoped(sp => new HttpClient
     BaseAddress = new Uri("https://localhost:7041")
 });
 
+builder.Services.AddSingleton(sp =>
+{
+    var config = new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .Build();
+    return config;
+});
+
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddAuthorizationCore();

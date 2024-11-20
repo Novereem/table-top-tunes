@@ -12,18 +12,20 @@ namespace TTTFrontend.Services
         private readonly ISyncLocalStorageService _localStorage;
         private readonly NavigationManager _navigationManager;
         private readonly CustomAuthenticationStateProvider _authenticationStateProvider;
+        private readonly string _baseUrl;
 
-        public AuthenticationService(HttpClient httpClient, ISyncLocalStorageService localStorage, NavigationManager navigationManager, AuthenticationStateProvider authenticationStateProvider)
+        public AuthenticationService(HttpClient httpClient, ISyncLocalStorageService localStorage, NavigationManager navigationManager, AuthenticationStateProvider authenticationStateProvider, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _localStorage = localStorage;
             _navigationManager = navigationManager;
             _authenticationStateProvider = (CustomAuthenticationStateProvider)authenticationStateProvider;
+            _baseUrl = configuration["ApiSettings:BaseUrl"] ?? throw new InvalidOperationException("API Base URL is not configured."); ;
         }
 
         public async Task<LoginResponseDTO> Login(UserLoginDTO loginModel)
         {
-            var response = await _httpClient.PostAsJsonAsync("https://localhost:7041/api/Authentication/login", loginModel);
+            var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/Authentication/login", loginModel);
 
             if (response.IsSuccessStatusCode)
             {
