@@ -19,7 +19,8 @@ namespace TTTFrontend.Services
             _httpClient = httpClient;
             _localStorage = localStorage;
             _navigationManager = navigationManager;
-            _authenticationStateProvider = (CustomAuthenticationStateProvider)authenticationStateProvider;
+            _authenticationStateProvider = authenticationStateProvider as CustomAuthenticationStateProvider
+    ?? throw new InvalidOperationException("AuthenticationStateProvider is not of type CustomAuthenticationStateProvider");
             _baseUrl = configuration["ApiSettings:BaseUrl"] ?? throw new InvalidOperationException("API Base URL is not configured."); ;
         }
 

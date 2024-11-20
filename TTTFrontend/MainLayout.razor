@@ -1,14 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager Navigation
 @using TTTFrontend.Components.Layout
-@using TTTFrontend.Services
-@using Microsoft.AspNetCore.Components.Authorization
-@inject AuthenticationService AuthService
-@inject AuthenticationStateProvider AuthStateProvider
-
-@code {
-    private bool HideLayout => Navigation.Uri.EndsWith("/login") || Navigation.Uri.EndsWith("/register");
-}
 
 <div class="page">
     @if (!HideLayout)
@@ -33,27 +25,5 @@
 </div>
 
 @code {
-    private Timer _timer;
-
-    protected override void OnInitialized()
-    {
-        _timer = new Timer(CheckTokenValidity, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
-    }
-
-    private async void CheckTokenValidity(object state)
-    {
-        var token = AuthService.GetToken();
-        if (AuthStateProvider is CustomAuthenticationStateProvider customAuthProvider)
-        {
-            if (string.IsNullOrEmpty(token) || customAuthProvider.IsTokenExpired(token))
-            {
-                customAuthProvider.MarkUserAsLoggedOut();
-            }
-        }
-    }
-
-    public void Dispose()
-    {
-        _timer?.Dispose();
-    }
+    private bool HideLayout => Navigation.Uri.EndsWith("/login") || Navigation.Uri.EndsWith("/register");
 }

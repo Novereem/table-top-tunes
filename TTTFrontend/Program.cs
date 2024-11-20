@@ -23,7 +23,9 @@ builder.Services.AddSingleton(sp =>
     return config;
 });
 
+// Register CustomAuthenticationStateProvider explicitly
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddAuthorizationCore();
 
