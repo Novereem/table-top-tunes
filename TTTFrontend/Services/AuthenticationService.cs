@@ -1,5 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Shared.Models.DTOs;
 using System.Net.Http.Json;
 
@@ -10,12 +11,14 @@ namespace TTTFrontend.Services
         private readonly HttpClient _httpClient;
         private readonly ISyncLocalStorageService _localStorage;
         private readonly NavigationManager _navigationManager;
+        private readonly CustomAuthenticationStateProvider _authenticationStateProvider;
 
-        public AuthenticationService(HttpClient httpClient, ISyncLocalStorageService localStorage, NavigationManager navigationManager)
+        public AuthenticationService(HttpClient httpClient, ISyncLocalStorageService localStorage, NavigationManager navigationManager, AuthenticationStateProvider authenticationStateProvider)
         {
             _httpClient = httpClient;
             _localStorage = localStorage;
             _navigationManager = navigationManager;
+            _authenticationStateProvider = (CustomAuthenticationStateProvider)authenticationStateProvider;
         }
 
         public async Task<LoginResponseDTO> Login(UserLoginDTO loginModel)
@@ -27,7 +30,8 @@ namespace TTTFrontend.Services
                 var responseData = await response.Content.ReadFromJsonAsync<LoginResponseDTO>();
                 if (responseData != null && !string.IsNullOrEmpty(responseData.Token))
                 {
-                    // Return success response with token
+                    _localStorage.SetItem("authToken", responseData.Token);
+                    _authenticationStateProvider.MarkUserAsAuthenticated(responseData.Token);
                     return new LoginResponseDTO
                     {
                         Success = true,
@@ -36,7 +40,6 @@ namespace TTTFrontend.Services
                 }
             }
 
-            // If the login was unsuccessful, capture the error message
             var errorMessage = await response.Content.ReadAsStringAsync();
             return new LoginResponseDTO
             {
@@ -48,6 +51,7 @@ namespace TTTFrontend.Services
         public void Logout()
         {
             _localStorage.RemoveItem("authToken");
+            _authenticationStateProvider.MarkUserAsLoggedOut();
             _navigationManager.NavigateTo("/login");
         }
 
