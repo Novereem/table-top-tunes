@@ -1,7 +1,95 @@
 ﻿@page "/login"
+@using System.Net.Http.Json
+@using Shared.Models.DTOs
+@using TTTFrontend.Services
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
+@inject AuthenticationService AuthService
 
-<h3>Login</h3>
+<h3 class="text-center mt-5">Login</h3>
+
+<div class="d-flex justify-content-center align-items-center" style="height: 80vh; outline: none; box-shadow: none;" aria-expanded="false">
+    <div class="card p-4" style="width: 300px;">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <p class="text-danger mt-3">@errorMessage</p>
+        }
+        
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+            <DataAnnotationsValidator />
+
+            <div class="form-group mb-3">
+                <label for="username">Username:<span class="@(showUsernameError ? "text-danger" : "text-dark")">*</span></label>
+                <InputText id="username" class="@(showUsernameError ? "form-control border-danger" : "form-control")" @bind-Value="loginModel.Username" />
+                @if (showUsernameError)
+                {
+                    <small class="text-danger">Username is required.</small>
+                }
+            </div>
+            <div class="form-group mb-3">
+                <label for="password">Password:<span class="@(showPasswordError ? "text-danger" : "text-dark")">*</span></label>
+                <InputText id="password" class="@(showPasswordError ? "form-control border-danger" : "form-control")" @bind-Value="loginModel.Password" type="password" />
+                @if (showPasswordError)
+                {
+                    <small class="text-danger">Password is required.</small>
+                }
+            </div>
+
+            <button type="submit" class="btn btn-outline-dark w-100">Login</button>
+        </EditForm>
+    </div>
+</div>
 
 @code {
+    private UserLoginDTO loginModel = new UserLoginDTO();
+    private string errorMessage;
+    private bool showUsernameAsterisk = false;
+    private bool showPasswordAsterisk = false;
+    private bool showUsernameError = false;
+    private bool showPasswordError = false;
 
+    private async Task HandleLogin()
+    {
+        // Reset error states before submission
+        ResetErrorStates();
+
+        // Validate fields before calling the backend
+        if (string.IsNullOrEmpty(loginModel.Username) || string.IsNullOrEmpty(loginModel.Password))
+        {
+            if (string.IsNullOrEmpty(loginModel.Username))
+            {
+                showUsernameAsterisk = true;
+                showUsernameError = true;
+            }
+            if (string.IsNullOrEmpty(loginModel.Password))
+            {
+                showPasswordAsterisk = true;
+                showPasswordError = true;
+            }
+            errorMessage = "Please fill in all required fields.";
+            return;
+        }
+
+        var response = await AuthService.Login(loginModel);
+        if (response.Success)
+        {
+            LocalStorage.SetItem("authToken", response.Token);
+
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = response.ErrorMessage;
+        }
+    }
+
+    private void ResetErrorStates()
+    {
+        showUsernameAsterisk = false;
+        showPasswordAsterisk = false;
+        showUsernameError = false;
+        showPasswordError = false;
+        errorMessage = string.Empty;
+    }
 }
