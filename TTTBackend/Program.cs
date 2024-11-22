@@ -20,14 +20,20 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IAuthenticationData, AuthenticationData>();
 builder.Services.AddScoped<IPasswordHashingService, PasswordHashingService>();
 
+builder.Services.AddScoped<ISceneService, SceneService>();
+builder.Services.AddScoped<ISceneData, SceneData>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserData, UserData>();
+
 // CORS Policy
 builder.Services.AddCors(options =>
 {
-	options.AddPolicy("AllowAll", policy =>
+	options.AddPolicy("AllowFrontend", policy =>
 	{
-		policy.AllowAnyOrigin()
+		policy.WithOrigins("https://localhost:7040")
 			  .AllowAnyMethod()
-			  .AllowAnyHeader();
+			  .AllowAnyHeader()
+			  .AllowCredentials();
 	});
 });
 
@@ -110,10 +116,10 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI();
 }
 
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.UseCors("AllowAll");
 app.MapControllers();
 
 app.Run();
