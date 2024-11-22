@@ -6,27 +6,11 @@
         <h3 class="fs-1 fw-semibold m-0">Scenes</h3>
     </div>
 
-    <div class="list-group list-group-flush overflow-auto flex-grow-1">
-        @foreach (var scene in Scenes)
-        {
-            <SceneComponent Scene="@scene" />
-        }
+    <div class="list-group list-group-flush overflow-auto flex-grow-1 border-end">
+        <SceneComponent/>
     </div>
 </div>
 
 @code {
-    public List<Scene> Scenes { get; set; }
 
-    protected override void OnInitialized()
-    {
-        Scenes = new List<Scene>
-        {
-            new Scene("Scene 1"),
-            new Scene("Scene 2"),
-            new Scene("Scene 3"),
-            new Scene("Scene 4"),
-            new Scene("Scene 5"),
-            new Scene("Scene 6"),
-        };
-    }
 }

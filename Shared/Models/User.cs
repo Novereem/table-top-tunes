@@ -14,7 +14,8 @@ namespace Shared.Models
 		public string Email { get; set; }
 		public string PasswordHash { get; set; }
 
-		public User(string username, string email, string passwordHash)
+        public List<Scene> Scenes { get; set; } = new List<Scene>();
+        public User(string username, string email, string passwordHash)
 		{
 			Username = username;
 			Email = email;

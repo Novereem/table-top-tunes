@@ -12,7 +12,7 @@ using Shared.Models.Extensions;
 using Shared.Constants;
 using Shared.Enums;
 
-namespace TTTBackend.Tests
+namespace TTTBackend.Tests.Services
 {
     public class AuthenticationServiceTests
     {
