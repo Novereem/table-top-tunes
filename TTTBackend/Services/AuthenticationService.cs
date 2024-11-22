@@ -49,13 +49,12 @@ namespace TTTBackend.Services
 			catch (Exception ex)
 			{
 				//The exception could be logged in the future
-
                 return (false, ErrorMessages.GetErrorMessage(ErrorCode.UnknownError));
             }
             
         }
 
-        public async Task<(bool Success, string Username, string ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
+        public async Task<(bool Success, User user, string ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
 		{
             var loginUser = loginDTO.ToUserFromLoginDTO(_passwordHashingService);
 
@@ -68,10 +67,10 @@ namespace TTTBackend.Services
                 return (false, null, ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials));
             }
 
-            return (true, user.Username, null);
+            return (true, user, null);
         }
 
-		public string GenerateJwtToken(string username)
+		public string GenerateJwtToken(Guid userGuid, string username)
 		{
 			var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 			if (string.IsNullOrEmpty(secretKey))
@@ -81,7 +80,8 @@ namespace TTTBackend.Services
 
 			var claims = new[]
 			{
-			new Claim(JwtRegisteredClaimNames.Sub, username),
+			new Claim(ClaimTypes.Name, username),
+			new Claim(ClaimTypes.NameIdentifier, userGuid.ToString()),
 			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
 		};
 
