@@ -27,10 +27,13 @@ namespace Shared.Models.Extensions
             };
         }
 
-        public static SceneGetResponseDTO ToSceneGetResponseDTOFromScene(this Scene scene)
+        public static SceneGetResponseDTO? ToSceneGetResponseDTOFromScene(this Scene? scene)
         {
+            if (scene == null) return null;
+
             return new SceneGetResponseDTO
             {
+                Id = scene.Id,
                 Name = scene.Name,
                 SoundPresets = scene.SoundPresets,
                 CreatedAt = scene.CreatedAt,

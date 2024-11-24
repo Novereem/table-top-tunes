@@ -122,7 +122,7 @@ namespace TTTBackend.Tests.Services
 
             // Assert
             Assert.True(result.Success);
-            Assert.Equal("testuser", result.Username);
+            Assert.Equal(user, result.user);
             Assert.Null(result.ErrorMessage);
         }
 
@@ -141,7 +141,7 @@ namespace TTTBackend.Tests.Services
 
             // Assert
             Assert.False(result.Success);
-            Assert.Null(result.Username);
+            Assert.Null(result.user);
             Assert.Equal(ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials), result.ErrorMessage);
         }
 
@@ -158,7 +158,7 @@ namespace TTTBackend.Tests.Services
 
             // Assert
             Assert.False(result.Success);
-            Assert.Null(result.Username);
+            Assert.Null(result.user); // Ensure no user is returned
             Assert.Equal(ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials), result.ErrorMessage);
         }
 
@@ -171,10 +171,11 @@ namespace TTTBackend.Tests.Services
             Environment.SetEnvironmentVariable("JWT_ISSUER", "my_issuer");
             Environment.SetEnvironmentVariable("JWT_AUDIENCE", "my_audience");
 
+            var userGuid = Guid.NewGuid();
             var username = "testuser";
 
             // Act
-            var token = _authService.GenerateJwtToken(username);
+            var token = _authService.GenerateJwtToken(userGuid, username);
 
             // Assert
             Assert.False(string.IsNullOrEmpty(token));
@@ -186,8 +187,11 @@ namespace TTTBackend.Tests.Services
             // Arrange
             Environment.SetEnvironmentVariable("JWT_SECRET_KEY", null);
 
+            var userGuid = Guid.NewGuid();
+            var username = "testuser";
+
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => _authService.GenerateJwtToken("testuser"));
+            Assert.Throws<InvalidOperationException>(() => _authService.GenerateJwtToken(userGuid, username));
         }
     }
 }

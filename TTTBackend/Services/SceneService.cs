@@ -35,7 +35,7 @@ namespace TTTBackend.Services
         public async Task<SceneGetResponseDTO?> GetSceneByIdAsync(Guid id)
         {
             var scene = await _sceneData.GetSceneByIdAsync(id);
-            return scene.ToSceneGetResponseDTOFromScene();
+            return scene?.ToSceneGetResponseDTOFromScene();
         }
 
         public async Task<List<SceneListItemDTO>> GetScenesListByUserIdAsync(Guid userId)

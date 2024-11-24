@@ -50,8 +50,8 @@ namespace TTTBackend.Services
             
         }
 
-        public async Task<(bool Success, User user, string ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
-		{
+        public async Task<(bool Success, User? user, string? ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
+        {
             var loginUser = loginDTO.ToUserFromLoginDTO(_passwordHashingService);
 
             var user = await _authData.GetUserByUsernameAsync(loginUser.Username);
@@ -64,7 +64,7 @@ namespace TTTBackend.Services
             return (true, user, null);
         }
 
-		public string GenerateJwtToken(Guid userGuid, string username)
+        public string GenerateJwtToken(Guid userGuid, string username)
 		{
 			var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 			if (string.IsNullOrEmpty(secretKey))

@@ -1,5 +1,4 @@
 ﻿using Shared.Enums;
-using Shared.Models.Sounds.Presets;
 using Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -14,26 +13,33 @@ namespace TTTBackend.Tests.Data
     public class PresetSoundTest
     {
         [Fact]
-        public void Test_SoundPresetAndPresetSoundRelationship()
+        public void Test_AudioFileAndSceneRelationship()
         {
             // Arrange
             var context = TestDbContextFactory.CreateInMemoryDbContext();
 
-            var soundPreset = new SoundPreset { Name = "Battle Preset" };
-            var audioFile = new AudioFile { Name = "Wind Effect", FilePath = "path/to/wind.mp3" };
-            var presetSound = new PresetSound { SoundPreset = soundPreset, Sound = audioFile, SoundType = AudioType.AmbientSound };
+            var scene = new Scene { Name = "Battle Scene" };
+            var audioFile = new AudioFile { Name = "Battle Music", Scene = scene };
 
-            soundPreset.PresetSounds.Add(presetSound);
-            context.SoundPresets.Add(soundPreset);
+            context.Scenes.Add(scene);
+            context.AudioFiles.Add(audioFile);
             context.SaveChanges();
 
             // Act
-            var fetchedPreset = context.SoundPresets.Include(sp => sp.PresetSounds).ThenInclude(ps => ps.Sound).FirstOrDefault();
+            var fetchedScene = context.Scenes
+                .Include(s => s.AudioFiles)
+                .FirstOrDefault(s => s.Name == "Battle Scene");
+
+            var fetchedAudioFile = context.AudioFiles
+                .Include(af => af.Scene)
+                .FirstOrDefault(af => af.Name == "Battle Music");
 
             // Assert
-            Assert.NotNull(fetchedPreset);
-            Assert.Single(fetchedPreset.PresetSounds);
-            Assert.Equal("Wind Effect", fetchedPreset.PresetSounds.First().Sound.Name);
+            Assert.NotNull(fetchedScene);
+            Assert.NotNull(fetchedAudioFile);
+            Assert.Single(fetchedScene.AudioFiles);
+            Assert.Equal("Battle Music", fetchedScene.AudioFiles.First().Name);
+            Assert.Equal("Battle Scene", fetchedAudioFile.Scene.Name);
         }
     }
 }

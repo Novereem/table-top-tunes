@@ -14,5 +14,6 @@ namespace Shared.Models.DTOs
         public string FilePath { get; set; }
         public DateTime CreatedAt { get; set; }
         public AudioType? Type { get; set; }
+        public Guid? SceneId { get; set; }
     }
 }
