@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Interfaces.Services;
+using Shared.Models;
 using Shared.Models.DTOs;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace TTTBackend.Controllers
 {
@@ -51,6 +54,7 @@ namespace TTTBackend.Controllers
             try
             {
                 var sceneDTO = await _sceneService.GetSceneByIdAsync(id);
+                
 
                 if (sceneDTO == null)
                 {

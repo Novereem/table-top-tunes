@@ -1,9 +1,23 @@
-﻿@using Shared.Models.Sounds
+﻿@using Shared.Models.DTOs
 
 <div class="border-bottom border-end" style="width: 20vw; height: 90vh">
-    <h3>Sound Effects</h3>
-    
+    <h3>Action Sounds</h3>
+    @if (ActionSounds != null && ActionSounds.Any())
+    {
+        <ul>
+            @foreach (var sound in ActionSounds)
+            {
+                <li>@sound.Name</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No action sounds available.</p>
+    }
 </div>
 
 @code {
+    [Parameter]
+    public List<AudioFileResponseDTO> ActionSounds { get; set; }
 }

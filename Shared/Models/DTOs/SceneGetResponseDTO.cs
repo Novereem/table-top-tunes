@@ -10,7 +10,7 @@ namespace Shared.Models.DTOs
     public class SceneGetResponseDTO
 	{
 		public string Name { get; set; } = string.Empty;
-        public List<AudioFile> AudioFiles { get; set; } = new List<AudioFile>();
+        public List<AudioFileResponseDTO> AudioFiles { get; set; } = new List<AudioFileResponseDTO>();
         public List<SoundPreset> SoundPresets { get; set; } = new List<SoundPreset>();
         public DateTime CreatedAt { get; set; }
     }

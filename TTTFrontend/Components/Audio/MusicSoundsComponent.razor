@@ -1,9 +1,24 @@
-﻿@using Shared.Models.Sounds
+﻿@using Shared.Models.DTOs
 
 <div class="border-bottom border-end" style="width: 20vw; height: 90vh">
     <h3>Music Tracks</h3>
-    
+    @if (MusicTracks != null && MusicTracks.Any())
+    {
+        <ul>
+            @foreach (var track in MusicTracks)
+            {
+                <li>@track.Name</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No music tracks available.</p>
+    }
+
 </div>
 
 @code {
+    [Parameter]
+    public List<AudioFileResponseDTO> MusicTracks { get; set; }
 }

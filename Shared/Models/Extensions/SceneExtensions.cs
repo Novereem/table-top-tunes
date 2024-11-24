@@ -34,7 +34,7 @@ namespace Shared.Models.Extensions
                 Name = scene.Name,
                 SoundPresets = scene.SoundPresets,
                 CreatedAt = scene.CreatedAt,
-                AudioFiles = scene.AudioFiles
+                AudioFiles = scene.AudioFiles.Select(audio => audio.ToAudioFileResponseDTO()).ToList(),
             };
         }
 

@@ -4,19 +4,34 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using TTTFrontend.Services;
 using TTTFrontend;
 using Blazored.LocalStorage;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddScoped<AuthorizationMessageHandler>();
+
+builder.Services.AddSingleton(new JsonSerializerOptions
+{
+    PropertyNameCaseInsensitive = true,
+    Converters = { new JsonStringEnumConverter() }
+});
+
 builder.Services.AddHttpClient<SceneService>(client =>
 {
-	client.BaseAddress = new Uri("https://localhost:7041");
+    client.BaseAddress = new Uri("https://localhost:7041");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 }).AddHttpMessageHandler<AuthorizationMessageHandler>();
 
-// Register other services
+builder.Services.AddScoped<AuthorizationMessageHandler>();
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress),
+    DefaultRequestHeaders = { { "Accept", "application/json" } }
+});
+
 builder.Services.AddScoped<SelectedSceneService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();

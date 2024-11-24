@@ -3,31 +3,20 @@
 @inject SelectedSceneService SelectedSceneService
 
 <div class="d-flex justify-content-between">
-    <MusicSoundsComponent/>
-    <AmbientSoundsComponent/>
-    <ActionSoundsComponent/>
-    <SoundPresetsComponent/>
+    <MusicSoundsComponent MusicTracks="SelectedSceneService.MusicTracks" />
+    <AmbientSoundsComponent AmbientSounds="SelectedSceneService.AmbientSounds" />
+    <ActionSoundsComponent ActionSounds="SelectedSceneService.ActionSounds" />
+    <SoundPresetsComponent />
 </div>
 
 @code {
-    private SceneGetResponseDTO SelectedScene;
-
     protected override void OnInitialized()
     {
-        SelectedScene = SelectedSceneService.SelectedScene;
-
-        // Subscribe to updates
-        SelectedSceneService.OnSceneChanged += UpdateSelectedScene;
-    }
-
-    private void UpdateSelectedScene()
-    {
-        SelectedScene = SelectedSceneService.SelectedScene;
-        InvokeAsync(StateHasChanged);
+        SelectedSceneService.OnSceneChanged += StateHasChanged;
     }
 
     public void Dispose()
     {
-        SelectedSceneService.OnSceneChanged -= UpdateSelectedScene;
+        SelectedSceneService.OnSceneChanged -= StateHasChanged;
     }
 }
