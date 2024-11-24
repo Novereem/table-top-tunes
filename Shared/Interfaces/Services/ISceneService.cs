@@ -11,8 +11,7 @@ namespace Shared.Interfaces.Services
     public interface ISceneService
     {
         Task<SceneCreateResponseDTO> CreateSceneAsync(SceneCreateDTO sceneDTO, Guid userId);
-        Task<Scene?> GetSceneByIdAsync(Guid id);
-        Task<List<SceneGetResponseDTO>> GetScenesByUserIdAsync(Guid userId);
-
-	}
+        Task<SceneGetResponseDTO?> GetSceneByIdAsync(Guid id);
+        Task<List<SceneListItemDTO>> GetScenesListByUserIdAsync(Guid userId);
+    }
 }

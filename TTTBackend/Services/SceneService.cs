@@ -32,16 +32,17 @@ namespace TTTBackend.Services
 			return newCreatedScene.ToSceneCreateResponseDTOFromScene();
         }
 
-        public async Task<Scene?> GetSceneByIdAsync(Guid id)
+        public async Task<SceneGetResponseDTO?> GetSceneByIdAsync(Guid id)
         {
-            return await _sceneData.GetSceneByIdAsync(id);
+            var scene = await _sceneData.GetSceneByIdAsync(id);
+            return scene.ToSceneGetResponseDTOFromScene();
         }
 
-		public async Task<List<SceneGetResponseDTO>> GetScenesByUserIdAsync(Guid userId)
-		{
+        public async Task<List<SceneListItemDTO>> GetScenesListByUserIdAsync(Guid userId)
+        {
             var scenes = await _sceneData.GetScenesByUserIdAsync(userId);
 
-			return scenes.Select(scene => scene.ToSceneGetResponseDTOFromScene()).ToList();
-		}
-	}
+            return scenes.Select(scene => scene.ToSceneListItemDTOFromScene()).ToList();
+        }
+    }
 }

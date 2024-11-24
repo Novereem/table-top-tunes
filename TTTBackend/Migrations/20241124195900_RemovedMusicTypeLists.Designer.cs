@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace TTTBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241124195900_RemovedMusicTypeLists")]
+    partial class RemovedMusicTypeLists
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,9 +30,6 @@ namespace TTTBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("CHAR(36)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("FilePath")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -41,8 +41,11 @@ namespace TTTBackend.Migrations
                     b.Property<Guid?>("SceneId")
                         .HasColumnType("CHAR(36)");
 
-                    b.Property<string>("Type")
-                        .HasColumnType("longtext");
+                    b.Property<int?>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("CHAR(36)");
@@ -82,19 +85,16 @@ namespace TTTBackend.Migrations
             modelBuilder.Entity("Shared.Models.Sounds.PresetSound", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("CHAR(36)");
-
-                    b.Property<Guid?>("SoundId")
                         .HasColumnType("CHAR(36)");
 
                     b.Property<Guid>("SoundPresetId")
                         .HasColumnType("CHAR(36)");
 
-                    b.HasKey("Id");
+                    b.Property<string>("SoundType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
-                    b.HasIndex("SoundId")
-                        .IsUnique();
+                    b.HasKey("Id");
 
                     b.HasIndex("SoundPresetId");
 
@@ -176,7 +176,7 @@ namespace TTTBackend.Migrations
                 {
                     b.HasOne("Shared.Models.AudioFile", "Sound")
                         .WithOne()
-                        .HasForeignKey("Shared.Models.Sounds.PresetSound", "SoundId");
+                        .HasForeignKey("Shared.Models.Sounds.PresetSound", "Id");
 
                     b.HasOne("Shared.Models.Sounds.SoundPreset", "SoundPreset")
                         .WithMany("PresetSounds")

@@ -40,10 +40,16 @@ namespace TTTFrontend.Services
 			}
 		}
 
-		public async Task<List<SceneGetResponseDTO>> GetScenesAsync()
-		{
-			var response = await _httpClient.GetFromJsonAsync<List<SceneGetResponseDTO>>("api/scenes");
-			return response ?? new List<SceneGetResponseDTO>();
-		}
-	}
+        public async Task<List<SceneListItemDTO>> GetScenesListAsync()
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<SceneListItemDTO>>("api/scenes");
+            return response ?? new List<SceneListItemDTO>();
+        }
+
+        public async Task<SceneGetResponseDTO> GetSceneAsync(Guid sceneId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<SceneGetResponseDTO>($"api/scenes/{sceneId}");
+            return response;
+        }
+    }
 }

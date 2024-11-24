@@ -3,6 +3,7 @@ using Shared.Models.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,12 +32,19 @@ namespace Shared.Models.Extensions
             return new SceneGetResponseDTO
             {
                 Name = scene.Name,
-                MusicTracks = scene.MusicTracks,
-                AmbientSounds = scene.AmbientSounds,
-                SoundEffects = scene.SoundEffects,
                 SoundPresets = scene.SoundPresets,
                 CreatedAt = scene.CreatedAt
             };
         }
-	}
+
+        public static SceneListItemDTO ToSceneListItemDTOFromScene(this Scene scene)
+        {
+            return new SceneListItemDTO
+            {
+                Id = scene.Id,
+                Name = scene.Name,
+                CreatedAt = scene.CreatedAt
+            };
+        }
+    }
 }

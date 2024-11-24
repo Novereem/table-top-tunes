@@ -54,10 +54,8 @@ namespace TTTBackend.Services
 		{
             var loginUser = loginDTO.ToUserFromLoginDTO(_passwordHashingService);
 
-            // Fetch the user from the database by username
             var user = await _authData.GetUserByUsernameAsync(loginUser.Username);
 
-            // Validate user credentials
             if (user == null || !_passwordHashingService.VerifyPassword(loginDTO.Password, user.PasswordHash))
             {
                 return (false, null, ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials));

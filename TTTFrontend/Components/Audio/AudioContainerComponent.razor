@@ -1,4 +1,8 @@
-﻿<div class="d-flex justify-content-between">
+﻿@using Shared.Models.DTOs;
+@using TTTFrontend.Services;
+@inject SelectedSceneService SelectedSceneService
+
+<div class="d-flex justify-content-between">
     <MusicSoundsComponent/>
     <AmbientSoundsComponent/>
     <ActionSoundsComponent/>
@@ -6,5 +10,24 @@
 </div>
 
 @code {
+    private SceneGetResponseDTO SelectedScene;
 
+    protected override void OnInitialized()
+    {
+        SelectedScene = SelectedSceneService.SelectedScene;
+
+        // Subscribe to updates
+        SelectedSceneService.OnSceneChanged += UpdateSelectedScene;
+    }
+
+    private void UpdateSelectedScene()
+    {
+        SelectedScene = SelectedSceneService.SelectedScene;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SelectedSceneService.OnSceneChanged -= UpdateSelectedScene;
+    }
 }

@@ -17,6 +17,7 @@ builder.Services.AddHttpClient<SceneService>(client =>
 }).AddHttpMessageHandler<AuthorizationMessageHandler>();
 
 // Register other services
+builder.Services.AddScoped<SelectedSceneService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationService>();

@@ -5,12 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.Models.Sounds.Presets
+namespace Shared.Models.Sounds
 {
     public class SoundPreset : BaseEntity
     {
-        public string Name { get; set; } = string.Empty;
-        public List<PresetSound> PresetSounds { get; set; } = new List<PresetSound>();
+        public string Name { get; set; }
         public Scene Scene { get; set; }
+        public Guid SceneId { get; set; }
+        public List<PresetSound> PresetSounds { get; set; } = new List<PresetSound>();
     }
 }

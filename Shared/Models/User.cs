@@ -15,6 +15,7 @@ namespace Shared.Models
 		public string PasswordHash { get; set; }
 
         public List<Scene> Scenes { get; set; } = new List<Scene>();
+		public List<AudioFile> AudioFiles { get; set; } = new List<AudioFile>();
 
         public User() { }
         public User(string username, string email, string passwordHash)

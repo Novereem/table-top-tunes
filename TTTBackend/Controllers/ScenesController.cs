@@ -48,35 +48,44 @@ namespace TTTBackend.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetScene(Guid id)
         {
-            var scene = await _sceneService.GetSceneByIdAsync(id);
+            try
+            {
+                var sceneDTO = await _sceneService.GetSceneByIdAsync(id);
 
-            if (scene == null)
-                return NotFound();
+                if (sceneDTO == null)
+                {
+                    return NotFound(new { Message = "Scene not found." });
+                }
 
-            return Ok(scene);
+                return Ok(sceneDTO);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
-		[HttpGet]
-		public async Task<IActionResult> GetScenes()
-		{
-			try
-			{
-				var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-				if (userIdClaim == null)
-				{
-					return Unauthorized(new { Message = "UserId claim missing in token." });
-				}
+        [HttpGet]
+        public async Task<IActionResult> GetScenesList()
+        {
+            try
+            {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                if (userIdClaim == null)
+                {
+                    return Unauthorized(new { Message = "UserId claim missing in token." });
+                }
 
-				var userId = Guid.Parse(userIdClaim.Value);
+                var userId = Guid.Parse(userIdClaim.Value);
 
-				var sceneResponseDTOs = await _sceneService.GetScenesByUserIdAsync(userId);
+                var sceneListItems = await _sceneService.GetScenesListByUserIdAsync(userId);
 
-				return Ok(sceneResponseDTOs);
-			}
-			catch (Exception ex)
-			{
-				return BadRequest(new { Message = ex.Message });
-			}
-		}
-	}
+                return Ok(sceneListItems);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+    }
 }

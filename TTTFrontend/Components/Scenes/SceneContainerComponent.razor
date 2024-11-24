@@ -2,6 +2,8 @@
 @using TTTFrontend.Components.Scenes
 @using Shared.Models
 @using TTTFrontend.Services
+@inject SceneService SceneService
+@inject SelectedSceneService SelectedSceneService
 
 <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 20vw; height: 100vh;">
     <div class="d-flex justify-content-center align-items-center flex-shrink-0 text-decoration-none border-bottom border-end" style="height: 10vh;">
@@ -15,29 +17,33 @@
         }
         else if (!Scenes.Any())
         {
-            
+            <div>No scenes available.</div>
         }
         else
         {
             @foreach (var scene in Scenes)
             {
-                <SceneComponent Scene="scene" />
+                <button class="list-group-item list-group-item-action"
+                        @onclick="() => LoadSceneDetails(scene.Id)">
+                    @scene.Name (@scene.CreatedAt.ToString("yyyy-MM-dd"))
+                </button>
             }
         }
-        <SceneCreateButton/>
+        <SceneCreateButton />
     </div>
 </div>
 
 @code {
-    private List<SceneGetResponseDTO> Scenes;
-
-    [Inject]
-    public SceneService SceneService { get; set; }
+    private List<SceneListItemDTO> Scenes;
 
     protected override async Task OnInitializedAsync()
     {
-        Scenes = await SceneService.GetScenesAsync();
+        Scenes = await SceneService.GetScenesListAsync();
+    }
 
-        Scenes = Scenes.OrderBy(scene => scene.CreatedAt).ToList();
+    private async Task LoadSceneDetails(Guid sceneId)
+    {
+        var sceneDetails = await SceneService.GetSceneAsync(sceneId);
+        SelectedSceneService.SelectedScene = sceneDetails;
     }
 }

@@ -24,6 +24,8 @@ builder.Services.AddScoped<ISceneService, SceneService>();
 builder.Services.AddScoped<ISceneData, SceneData>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserData, UserData>();
+builder.Services.AddScoped<IAudioService, AudioService>();
+builder.Services.AddScoped<IAudioData, AudioData>();
 
 // CORS Policy
 builder.Services.AddCors(options =>

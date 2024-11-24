@@ -21,7 +21,7 @@ namespace TTTBackend.Tests.Data
 
             var soundPreset = new SoundPreset { Name = "Battle Preset" };
             var audioFile = new AudioFile { Name = "Wind Effect", FilePath = "path/to/wind.mp3" };
-            var presetSound = new PresetSound { SoundPreset = soundPreset, Sound = audioFile, SoundType = SoundType.AmbientSound };
+            var presetSound = new PresetSound { SoundPreset = soundPreset, Sound = audioFile, SoundType = AudioType.AmbientSound };
 
             soundPreset.PresetSounds.Add(presetSound);
             context.SoundPresets.Add(soundPreset);

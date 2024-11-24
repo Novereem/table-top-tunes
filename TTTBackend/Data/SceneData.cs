@@ -31,6 +31,7 @@ namespace TTTBackend.Data
 			return await _context.Scenes
 				.Where(scene => scene.User.Id == userId)
                 .OrderBy(scene => scene.CreatedAt)
+                .Include(scene => scene.AudioFiles)
                 .ToListAsync();
 		}
 	}

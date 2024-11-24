@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Shared.Models;
-using Shared.Models.Sounds.Presets;
 using Shared.Models.Sounds;
+using Shared.Models;
 
 public class ApplicationDbContext : DbContext
 {
@@ -12,9 +11,6 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Scene> Scenes { get; set; }
-    public DbSet<MusicTrack> MusicTracks { get; set; }
-    public DbSet<AmbientSound> AmbientSounds { get; set; }
-    public DbSet<SoundEffect> SoundEffects { get; set; }
     public DbSet<SoundPreset> SoundPresets { get; set; }
     public DbSet<PresetSound> PresetSounds { get; set; }
     public DbSet<AudioFile> AudioFiles { get; set; }
@@ -23,7 +19,7 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Automatically configure all Guid properties in the model to use CHAR(36) in MySQL
+        // Configure GUIDs as CHAR(36) for MySQL
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties())
@@ -35,50 +31,51 @@ public class ApplicationDbContext : DbContext
             }
         }
 
-        // User -> Scenes (One-to-Many)
+        // User -> Scenes
         modelBuilder.Entity<Scene>()
             .HasOne(s => s.User)
             .WithMany(u => u.Scenes)
+            .HasForeignKey(s => s.UserId)
             .IsRequired();
 
-        // Scene -> Audio Components (One-to-Many)
-        modelBuilder.Entity<MusicTrack>()
-            .HasOne(mt => mt.Scene)
-            .WithMany(s => s.MusicTracks)
+        // Scene -> AudioFiles
+        modelBuilder.Entity<AudioFile>()
+            .HasOne(af => af.Scene)
+            .WithMany(s => s.AudioFiles)
+            .HasForeignKey(af => af.SceneId)
+            .IsRequired(false);
+
+        // User -> AudioFiles
+        modelBuilder.Entity<AudioFile>()
+            .HasOne(af => af.User)
+            .WithMany(u => u.AudioFiles)
+            .HasForeignKey(af => af.UserId)
             .IsRequired();
 
-        modelBuilder.Entity<AmbientSound>()
-            .HasOne(ams => ams.Scene)
-            .WithMany(s => s.AmbientSounds)
-            .IsRequired();
-
-        modelBuilder.Entity<SoundEffect>()
-            .HasOne(se => se.Scene)
-            .WithMany(s => s.SoundEffects)
-            .IsRequired();
-
+        // Scene -> SoundPresets
         modelBuilder.Entity<SoundPreset>()
             .HasOne(sp => sp.Scene)
             .WithMany(s => s.SoundPresets)
+            .HasForeignKey(sp => sp.SceneId)
             .IsRequired();
 
-        // SoundPreset -> PresetSound (One-to-Many)
+        // SoundPreset -> PresetSounds
         modelBuilder.Entity<PresetSound>()
             .HasOne(ps => ps.SoundPreset)
             .WithMany(sp => sp.PresetSounds)
-            .HasForeignKey(ps => ps.SoundPresetId) // Explicit foreign key
+            .HasForeignKey(ps => ps.SoundPresetId)
             .IsRequired();
 
-        // PresetSound -> AudioFile (One-to-One)
+        // PresetSound -> AudioFile
         modelBuilder.Entity<PresetSound>()
-            .HasOne(ps => ps.Sound) // PresetSound.Sound navigates to AudioFile
-            .WithOne()              // AudioFile does not reference PresetSound
-            .HasForeignKey<PresetSound>(ps => ps.Id) // Foreign key on PresetSound
-            .IsRequired(false); // Optional, set to true if mandatory
+            .HasOne(ps => ps.Sound)
+            .WithOne()
+            .HasForeignKey<PresetSound>(ps => ps.SoundId)
+            .IsRequired(false);
 
-        // Configure enum to be stored as strings instead of integers
-        modelBuilder.Entity<PresetSound>()
-            .Property(ps => ps.SoundType)
+        // Enum Configurations
+        modelBuilder.Entity<AudioFile>()
+            .Property(af => af.Type)
             .HasConversion<string>();
     }
 }
