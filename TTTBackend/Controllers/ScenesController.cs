@@ -30,10 +30,15 @@ namespace TTTBackend.Controllers
                 }
 
                 var userId = Guid.Parse(userIdClaim.Value);
-                var newScene = await _sceneService.CreateSceneAsync(sceneDTO, userId);
+                var newSceneResponseDTO = await _sceneService.CreateSceneAsync(sceneDTO, userId);
 
-                return CreatedAtAction(nameof(GetScene), new { id = newScene.Id }, newScene);
-            }
+				return CreatedAtAction(
+			        nameof(GetScene),
+			        new { id = newSceneResponseDTO.Id },
+			        newSceneResponseDTO 
+		        );
+
+			}
             catch (Exception ex)
             {
                 return BadRequest(new { Message = ex.Message });
@@ -50,5 +55,28 @@ namespace TTTBackend.Controllers
 
             return Ok(scene);
         }
-    }
+
+		[HttpGet]
+		public async Task<IActionResult> GetScenes()
+		{
+			try
+			{
+				var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+				if (userIdClaim == null)
+				{
+					return Unauthorized(new { Message = "UserId claim missing in token." });
+				}
+
+				var userId = Guid.Parse(userIdClaim.Value);
+
+				var sceneResponseDTOs = await _sceneService.GetScenesByUserIdAsync(userId);
+
+				return Ok(sceneResponseDTOs);
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(new { Message = ex.Message });
+			}
+		}
+	}
 }

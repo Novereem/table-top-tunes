@@ -15,8 +15,28 @@ namespace Shared.Models.Extensions
             return new Scene
             {
                 Name = dto.Name
-                // The User property is left null here, as it will be assigned later in the service layer
             };
         }
-    }
+        public static SceneCreateResponseDTO ToSceneCreateResponseDTOFromScene(this Scene scene)
+        {
+            return new SceneCreateResponseDTO
+			{
+                Id = scene.Id,
+                Name = scene.Name
+            };
+        }
+
+        public static SceneGetResponseDTO ToSceneGetResponseDTOFromScene(this Scene scene)
+        {
+            return new SceneGetResponseDTO
+            {
+                Name = scene.Name,
+                MusicTracks = scene.MusicTracks,
+                AmbientSounds = scene.AmbientSounds,
+                SoundEffects = scene.SoundEffects,
+                SoundPresets = scene.SoundPresets,
+                CreatedAt = scene.CreatedAt
+            };
+        }
+	}
 }

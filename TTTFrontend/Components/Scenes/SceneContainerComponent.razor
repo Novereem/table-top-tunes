@@ -1,5 +1,7 @@
-﻿@using TTTFrontend.Components.Scenes
+﻿@using Shared.Models.DTOs
+@using TTTFrontend.Components.Scenes
 @using Shared.Models
+@using TTTFrontend.Services
 
 <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 20vw; height: 100vh;">
     <div class="d-flex justify-content-center align-items-center flex-shrink-0 text-decoration-none border-bottom border-end" style="height: 10vh;">
@@ -7,11 +9,35 @@
     </div>
 
     <div class="list-group list-group-flush overflow-auto flex-grow-1 border-end">
-        <SceneComponent/>
+        @if (Scenes == null)
+        {
+            <div>Loading...</div>
+        }
+        else if (!Scenes.Any())
+        {
+            
+        }
+        else
+        {
+            @foreach (var scene in Scenes)
+            {
+                <SceneComponent Scene="scene" />
+            }
+        }
         <SceneCreateButton/>
     </div>
 </div>
 
 @code {
+    private List<SceneGetResponseDTO> Scenes;
 
+    [Inject]
+    public SceneService SceneService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Scenes = await SceneService.GetScenesAsync();
+
+        Scenes = Scenes.OrderBy(scene => scene.CreatedAt).ToList();
+    }
 }

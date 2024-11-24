@@ -26,5 +26,12 @@ namespace TTTBackend.Data
                 .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
-    }
+		public async Task<List<Scene>> GetScenesByUserIdAsync(Guid userId)
+		{
+			return await _context.Scenes
+				.Where(scene => scene.User.Id == userId)
+                .OrderBy(scene => scene.CreatedAt)
+                .ToListAsync();
+		}
+	}
 }

@@ -29,10 +29,8 @@ namespace TTTBackend.Services
         {
 			try
 			{
-				// Convert the DTO to a User model using the extension method
 				var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
 
-				// Check if username or email is already taken
 				if (await _authData.GetUserByUsernameAsync(newUser.Username) != null)
 				{
 					return (false, ErrorMessages.GetErrorMessage(ErrorCode.UsernameTaken));
@@ -42,13 +40,11 @@ namespace TTTBackend.Services
 					return (false, ErrorMessages.GetErrorMessage(ErrorCode.EmailAlreadyRegistered));
 				}
 
-				// Save the user to the database
 				await _authData.RegisterUserAsync(newUser);
 				return (true, "Successful Registration");
 			}
 			catch (Exception ex)
 			{
-				//The exception could be logged in the future
                 return (false, ErrorMessages.GetErrorMessage(ErrorCode.UnknownError));
             }
             

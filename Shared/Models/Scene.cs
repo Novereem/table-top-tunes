@@ -17,5 +17,6 @@ namespace Shared.Models
         public List<AmbientSound> AmbientSounds { get; set; } = new List<AmbientSound>();
         public List<SoundEffect> SoundEffects { get; set; } = new List<SoundEffect>();
         public List<SoundPreset> SoundPresets { get; set; } = new List<SoundPreset>();
+        public DateTime CreatedAt { get; set; }
     }
 }

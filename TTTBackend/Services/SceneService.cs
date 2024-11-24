@@ -19,19 +19,29 @@ namespace TTTBackend.Services
             _userService = userService;
         }
 
-        public async Task<Scene> CreateSceneAsync(SceneCreateDTO sceneDTO, Guid userId)
+        public async Task<SceneCreateResponseDTO> CreateSceneAsync(SceneCreateDTO sceneDTO, Guid userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);
 
             var newScene = sceneDTO.ToSceneFromSceneCreateDTO();
             newScene.User = user;
+            newScene.CreatedAt = DateTime.UtcNow;
 
-            return await _sceneData.CreateSceneAsync(newScene);
+            var newCreatedScene = await _sceneData.CreateSceneAsync(newScene);
+
+			return newCreatedScene.ToSceneCreateResponseDTOFromScene();
         }
 
         public async Task<Scene?> GetSceneByIdAsync(Guid id)
         {
             return await _sceneData.GetSceneByIdAsync(id);
         }
-    }
+
+		public async Task<List<SceneGetResponseDTO>> GetScenesByUserIdAsync(Guid userId)
+		{
+            var scenes = await _sceneData.GetScenesByUserIdAsync(userId);
+
+			return scenes.Select(scene => scene.ToSceneGetResponseDTOFromScene()).ToList();
+		}
+	}
 }
