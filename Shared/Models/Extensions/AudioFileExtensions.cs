@@ -20,7 +20,7 @@ namespace Shared.Models.Extensions
             };
         }
 
-        public static AudioFile ToAudioFile(this AudioFileCreateDTO audioFileCreateDTO, User user)
+        public static AudioFile ToAudioFileFromCreateDTO(this AudioFileCreateDTO audioFileCreateDTO, User user)
         {
             return new AudioFile
             {
@@ -29,6 +29,13 @@ namespace Shared.Models.Extensions
                 User = user,
                 CreatedAt = DateTime.UtcNow
             };
+        }
+
+        public static AudioFile ToAudioFileFromAssignDTO(this AudioFileAssignDTO assignDTO, AudioFile audioFile, Scene scene)
+        {
+            audioFile.Scene = scene;
+            audioFile.Type = assignDTO.Type;
+            return audioFile;
         }
     }
 }

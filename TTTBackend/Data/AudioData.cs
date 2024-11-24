@@ -1,4 +1,5 @@
-﻿using Shared.Interfaces.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Shared.Interfaces.Data;
 using Shared.Models;
 
 namespace TTTBackend.Data
@@ -15,6 +16,17 @@ namespace TTTBackend.Data
         public async Task SaveAudioFileAsync(AudioFile audioFile)
         {
             _context.AudioFiles.Add(audioFile);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<AudioFile> GetAudioFileByIdAsync(Guid audioFileId)
+        {
+            return await _context.AudioFiles.FirstOrDefaultAsync(af => af.Id == audioFileId);
+        }
+
+        public async Task UpdateAudioFileAsync(AudioFile audioFile)
+        {
+            _context.AudioFiles.Update(audioFile);
             await _context.SaveChangesAsync();
         }
     }

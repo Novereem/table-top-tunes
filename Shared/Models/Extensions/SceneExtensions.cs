@@ -33,7 +33,8 @@ namespace Shared.Models.Extensions
             {
                 Name = scene.Name,
                 SoundPresets = scene.SoundPresets,
-                CreatedAt = scene.CreatedAt
+                CreatedAt = scene.CreatedAt,
+                AudioFiles = scene.AudioFiles
             };
         }
 

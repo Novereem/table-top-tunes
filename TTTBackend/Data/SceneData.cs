@@ -24,6 +24,7 @@ namespace TTTBackend.Data
         {
             return await _context.Scenes
                 .Include(s => s.User)
+                .Include(scene => scene.AudioFiles)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 		public async Task<List<Scene>> GetScenesByUserIdAsync(Guid userId)

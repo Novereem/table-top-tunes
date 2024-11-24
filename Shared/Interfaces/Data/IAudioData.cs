@@ -10,5 +10,7 @@ namespace Shared.Interfaces.Data
     public interface IAudioData
     {
         Task SaveAudioFileAsync(AudioFile audioFile);
+        Task<AudioFile> GetAudioFileByIdAsync(Guid audioFileId);
+        Task UpdateAudioFileAsync(AudioFile audioFile);
     }
 }

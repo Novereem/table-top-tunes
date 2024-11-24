@@ -23,7 +23,6 @@ namespace TTTBackend.Controllers
         {
             try
             {
-                // Get the user ID from the claims
                 var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
                 if (userIdClaim == null)
                 {
@@ -32,9 +31,22 @@ namespace TTTBackend.Controllers
 
                 var userId = Guid.Parse(userIdClaim.Value);
 
-                // Call the service to create the audio file
                 var response = await _audioService.CreateAudioFileAsync(audioFileCreateDTO, userId);
 
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpPut("assign")]
+        public async Task<IActionResult> AssignAudioFileToScene([FromBody] AudioFileAssignDTO assignDTO)
+        {
+            try
+            {
+                var response = await _audioService.AssignAudioFileToSceneAsync(assignDTO);
                 return Ok(response);
             }
             catch (Exception ex)
