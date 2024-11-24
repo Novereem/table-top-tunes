@@ -21,6 +21,106 @@ namespace TTTBackend.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("Shared.Models.AudioFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("CHAR(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid?>("SceneId")
+                        .HasColumnType("CHAR(36)");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("CHAR(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SceneId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AudioFiles");
+                });
+
+            modelBuilder.Entity("Shared.Models.Scene", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("CHAR(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("CHAR(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Scenes");
+                });
+
+            modelBuilder.Entity("Shared.Models.Sounds.PresetSound", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("CHAR(36)");
+
+                    b.Property<Guid?>("SoundId")
+                        .HasColumnType("CHAR(36)");
+
+                    b.Property<Guid>("SoundPresetId")
+                        .HasColumnType("CHAR(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SoundId")
+                        .IsUnique();
+
+                    b.HasIndex("SoundPresetId");
+
+                    b.ToTable("PresetSounds");
+                });
+
+            modelBuilder.Entity("Shared.Models.Sounds.SoundPreset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("CHAR(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("SceneId")
+                        .HasColumnType("CHAR(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SceneId");
+
+                    b.ToTable("SoundPresets");
+                });
+
             modelBuilder.Entity("Shared.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -42,6 +142,81 @@ namespace TTTBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Shared.Models.AudioFile", b =>
+                {
+                    b.HasOne("Shared.Models.Scene", "Scene")
+                        .WithMany("AudioFiles")
+                        .HasForeignKey("SceneId");
+
+                    b.HasOne("Shared.Models.User", "User")
+                        .WithMany("AudioFiles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Scene");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Shared.Models.Scene", b =>
+                {
+                    b.HasOne("Shared.Models.User", "User")
+                        .WithMany("Scenes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Shared.Models.Sounds.PresetSound", b =>
+                {
+                    b.HasOne("Shared.Models.AudioFile", "Sound")
+                        .WithOne()
+                        .HasForeignKey("Shared.Models.Sounds.PresetSound", "SoundId");
+
+                    b.HasOne("Shared.Models.Sounds.SoundPreset", "SoundPreset")
+                        .WithMany("PresetSounds")
+                        .HasForeignKey("SoundPresetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sound");
+
+                    b.Navigation("SoundPreset");
+                });
+
+            modelBuilder.Entity("Shared.Models.Sounds.SoundPreset", b =>
+                {
+                    b.HasOne("Shared.Models.Scene", "Scene")
+                        .WithMany("SoundPresets")
+                        .HasForeignKey("SceneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Scene");
+                });
+
+            modelBuilder.Entity("Shared.Models.Scene", b =>
+                {
+                    b.Navigation("AudioFiles");
+
+                    b.Navigation("SoundPresets");
+                });
+
+            modelBuilder.Entity("Shared.Models.Sounds.SoundPreset", b =>
+                {
+                    b.Navigation("PresetSounds");
+                });
+
+            modelBuilder.Entity("Shared.Models.User", b =>
+                {
+                    b.Navigation("AudioFiles");
+
+                    b.Navigation("Scenes");
                 });
 #pragma warning restore 612, 618
         }

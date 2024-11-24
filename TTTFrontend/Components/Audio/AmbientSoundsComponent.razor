@@ -1,6 +1,23 @@
-﻿<div class="border-bottom border-end" style="width: 20vw; height: 90vh">
-	<h3>AmbientSounds</h3>
-</div>
-@code {
+﻿@using Shared.Models.DTOs
 
+<div class="border-bottom border-end" style="width: 20vw; height: 90vh">
+    <h3>Action Sounds</h3>
+    @if (AmbientSounds != null && AmbientSounds.Any())
+    {
+        <ul>
+            @foreach (var sound in AmbientSounds)
+            {
+                <li>@sound.Name</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No ambient sounds available.</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<AudioFileResponseDTO> AmbientSounds { get; set; }
 }

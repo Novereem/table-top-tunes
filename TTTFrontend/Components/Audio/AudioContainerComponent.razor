@@ -1,10 +1,22 @@
-﻿<div class="d-flex justify-content-between">
-    <MusicSoundsComponent/>
-    <AmbientSoundsComponent/>
-    <ActionSoundsComponent/>
-    <SoundPresetsComponent/>
+﻿@using Shared.Models.DTOs;
+@using TTTFrontend.Services;
+@inject SelectedSceneService SelectedSceneService
+
+<div class="d-flex justify-content-between">
+    <MusicSoundsComponent MusicTracks="SelectedSceneService.MusicTracks" />
+    <AmbientSoundsComponent AmbientSounds="SelectedSceneService.AmbientSounds" />
+    <ActionSoundsComponent ActionSounds="SelectedSceneService.ActionSounds" />
+    <SoundPresetsComponent />
 </div>
 
 @code {
+    protected override void OnInitialized()
+    {
+        SelectedSceneService.OnSceneChanged += StateHasChanged;
+    }
 
+    public void Dispose()
+    {
+        SelectedSceneService.OnSceneChanged -= StateHasChanged;
+    }
 }

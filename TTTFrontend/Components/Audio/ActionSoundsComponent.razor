@@ -1,27 +1,23 @@
-﻿<div class="border-bottom border-end overflow-auto flex-grow-1" style="width: 20vw; height: 90vh">
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-	<h3>SoundEffects</h3>
-</div>
-@code {
+﻿@using Shared.Models.DTOs
 
+<div class="border-bottom border-end" style="width: 20vw; height: 90vh">
+    <h3>Action Sounds</h3>
+    @if (ActionSounds != null && ActionSounds.Any())
+    {
+        <ul>
+            @foreach (var sound in ActionSounds)
+            {
+                <li>@sound.Name</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No action sounds available.</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<AudioFileResponseDTO> ActionSounds { get; set; }
 }

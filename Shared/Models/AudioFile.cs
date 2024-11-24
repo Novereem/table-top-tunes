@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Shared.Enums;
+using Shared.Models.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace Shared.Models
 {
-	public class AudioFile
-	{
-		public Guid Id { get; set; }
-		public string Name { get; set; }
-
-		public AudioFile(string name)
-		{
-			Id = Guid.NewGuid();
-			Name = name;
-		}
-	}
+    public class AudioFile : BaseEntity
+    {
+        public string Name { get; set; }
+        public string FilePath { get; set; } = string.Empty;
+        public AudioType? Type { get; set; }
+        public User User { get; set; }
+        public Guid UserId { get; set; }
+        public Scene? Scene { get; set; }
+        public Guid? SceneId { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
 }

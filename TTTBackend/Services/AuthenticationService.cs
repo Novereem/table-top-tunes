@@ -29,10 +29,8 @@ namespace TTTBackend.Services
         {
 			try
 			{
-				// Convert the DTO to a User model using the extension method
 				var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
 
-				// Check if username or email is already taken
 				if (await _authData.GetUserByUsernameAsync(newUser.Username) != null)
 				{
 					return (false, ErrorMessages.GetErrorMessage(ErrorCode.UsernameTaken));
@@ -42,36 +40,31 @@ namespace TTTBackend.Services
 					return (false, ErrorMessages.GetErrorMessage(ErrorCode.EmailAlreadyRegistered));
 				}
 
-				// Save the user to the database
 				await _authData.RegisterUserAsync(newUser);
 				return (true, "Successful Registration");
 			}
 			catch (Exception ex)
 			{
-				//The exception could be logged in the future
-
                 return (false, ErrorMessages.GetErrorMessage(ErrorCode.UnknownError));
             }
             
         }
 
-        public async Task<(bool Success, string Username, string ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
-		{
+        public async Task<(bool Success, User? user, string? ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
+        {
             var loginUser = loginDTO.ToUserFromLoginDTO(_passwordHashingService);
 
-            // Fetch the user from the database by username
             var user = await _authData.GetUserByUsernameAsync(loginUser.Username);
 
-            // Validate user credentials
             if (user == null || !_passwordHashingService.VerifyPassword(loginDTO.Password, user.PasswordHash))
             {
                 return (false, null, ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials));
             }
 
-            return (true, user.Username, null);
+            return (true, user, null);
         }
 
-		public string GenerateJwtToken(string username)
+        public string GenerateJwtToken(Guid userGuid, string username)
 		{
 			var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 			if (string.IsNullOrEmpty(secretKey))
@@ -81,7 +74,8 @@ namespace TTTBackend.Services
 
 			var claims = new[]
 			{
-			new Claim(JwtRegisteredClaimNames.Sub, username),
+			new Claim(ClaimTypes.Name, username),
+			new Claim(ClaimTypes.NameIdentifier, userGuid.ToString()),
 			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
 		};
 
@@ -92,7 +86,7 @@ namespace TTTBackend.Services
 				issuer: Environment.GetEnvironmentVariable("JWT_ISSUER"),
 				audience: Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
 				claims: claims,
-				expires: DateTime.Now.AddMinutes(30),
+				expires: DateTime.Now.AddMinutes(1440),
 				signingCredentials: creds
 			);
 

@@ -21,7 +21,7 @@ namespace TTTFrontend.Services
             _navigationManager = navigationManager;
             _authenticationStateProvider = authenticationStateProvider as CustomAuthenticationStateProvider
     ?? throw new InvalidOperationException("AuthenticationStateProvider is not of type CustomAuthenticationStateProvider");
-            _baseUrl = configuration["ApiSettings:BaseUrl"] ?? throw new InvalidOperationException("API Base URL is not configured."); ;
+            _baseUrl = configuration["ApiSettings:BaseUrl"] ?? throw new InvalidOperationException("API Base URL is not configured.");
         }
 
         public async Task<LoginResponseDTO> Login(UserLoginDTO loginModel)

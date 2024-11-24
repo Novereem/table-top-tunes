@@ -1,14 +1,17 @@
-﻿@using Shared.Models
+﻿@using Shared.Models.DTOs
 
 <div class="mt-4 mx-5">
-	<div class="scene-hover-effect">
-		<div class="d-flex justify-content-center border py-5 lh-tight">
-			<h5 class="m-0 my-3">@Scene.Name</h5>
-		</div>
-	</div>
+    <div class="scene-hover-effect">
+        <div class="d-flex justify-content-center border py-5 lh-tight">
+            <h5 class="m-0 my-3">@Scene.Name</h5>
+        </div>
+        <div class="text-center text-muted">
+            <small>Created: @Scene.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+        </div>
+    </div>
 </div>
 
 @code {
     [Parameter]
-    public Scene Scene { get; set; }
+    public SceneGetResponseDTO Scene { get; set; }
 }

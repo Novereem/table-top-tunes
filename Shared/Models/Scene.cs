@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Shared.Models.Common;
+using Shared.Models.Sounds;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,15 +8,13 @@ using System.Threading.Tasks;
 
 namespace Shared.Models
 {
-    public class Scene
+    public class Scene : BaseEntity
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-
-        public Scene(string name)
-        {
-            Id = Guid.NewGuid();
-            Name = name;
-        }
+        public string Name { get; set; } = string.Empty;
+        public User User { get; set; }
+        public Guid UserId { get; set; }
+        public List<AudioFile> AudioFiles { get; set; } = new List<AudioFile>();
+        public List<SoundPreset> SoundPresets { get; set; } = new List<SoundPreset>();
+        public DateTime CreatedAt { get; set; }
     }
 }

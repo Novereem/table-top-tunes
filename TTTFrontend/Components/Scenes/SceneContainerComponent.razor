@@ -1,32 +1,49 @@
-﻿@using TTTFrontend.Components.Scenes
+﻿@using Shared.Models.DTOs
+@using TTTFrontend.Components.Scenes
 @using Shared.Models
+@using TTTFrontend.Services
+@inject SceneService SceneService
+@inject SelectedSceneService SelectedSceneService
 
 <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 20vw; height: 100vh;">
     <div class="d-flex justify-content-center align-items-center flex-shrink-0 text-decoration-none border-bottom border-end" style="height: 10vh;">
         <h3 class="fs-1 fw-semibold m-0">Scenes</h3>
     </div>
 
-    <div class="list-group list-group-flush overflow-auto flex-grow-1">
-        @foreach (var scene in Scenes)
+    <div class="list-group list-group-flush overflow-auto flex-grow-1 border-end">
+        @if (Scenes == null)
         {
-            <SceneComponent Scene="@scene" />
+            <div>Loading...</div>
         }
+        else if (!Scenes.Any())
+        {
+            <div>No scenes available.</div>
+        }
+        else
+        {
+            @foreach (var scene in Scenes)
+            {
+                <button class="list-group-item list-group-item-action"
+                        @onclick="() => LoadSceneDetails(scene.Id)">
+                    @scene.Name (@scene.CreatedAt.ToString("yyyy-MM-dd"))
+                </button>
+            }
+        }
+        <SceneCreateButton />
     </div>
 </div>
 
 @code {
-    public List<Scene> Scenes { get; set; }
+    private List<SceneListItemDTO> Scenes;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        Scenes = new List<Scene>
-        {
-            new Scene("Scene 1"),
-            new Scene("Scene 2"),
-            new Scene("Scene 3"),
-            new Scene("Scene 4"),
-            new Scene("Scene 5"),
-            new Scene("Scene 6"),
-        };
+        Scenes = await SceneService.GetScenesListAsync();
+    }
+
+    private async Task LoadSceneDetails(Guid sceneId)
+    {
+        var sceneDetails = await SceneService.GetSceneAsync(sceneId);
+        SelectedSceneService.SelectedScene = sceneDetails;
     }
 }

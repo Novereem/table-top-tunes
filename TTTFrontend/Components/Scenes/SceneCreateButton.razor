@@ -1,0 +1,27 @@
+﻿@using TTTFrontend.Services
+@inject SceneService SceneService
+
+<div class="mt-4 mx-5">
+	<div class="scene-hover-effect" @onclick="CreateScene">
+		<div class="d-flex justify-content-center border py-5 lh-tight">
+			<h5 class="m-0 my-3">New Scene</h5>
+		</div>
+	</div>
+</div>
+
+@code {
+    private async Task CreateScene()
+    {
+        // Call the service to create a new scene
+        var success = await SceneService.CreateSceneAsync("New Awesome Scene");
+
+        if (success)
+        {
+            Console.WriteLine("Scene created successfully!");
+        }
+        else
+        {
+            Console.WriteLine("Failed to create the scene.");
+        }
+    }
+}

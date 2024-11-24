@@ -42,7 +42,7 @@ public class AuthenticationController : ControllerBase
 			return Unauthorized(result.ErrorMessage);
 		}
 
-		var token = _authService.GenerateJwtToken(result.Username);
+		var token = _authService.GenerateJwtToken(result.user.Id, result.user.Username);
 		return Ok(new { Token = token });
 	}
 }
