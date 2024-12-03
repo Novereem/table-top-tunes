@@ -14,6 +14,10 @@ namespace Shared.Enums
         UnauthorizedAccess,
         InvalidInput,
         ResourceNotFound,
+        Database,
+        JWTNullOrEmpty,
+        MissingToken,
+        UnauthorizedToken,
         UnknownError
     }
 }

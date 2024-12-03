@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Enums;
 using Shared.Interfaces.Services;
 using Shared.Models.DTOs;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,32 +18,41 @@ public class AuthenticationController : ControllerBase
 		_authService = authService;
 	}
 
-	[HttpPost("register")]
-	public async Task<IActionResult> Register([FromBody] UserRegistrationDTO registrationDTO)
-	{
-		var (success, errorMessage) = await _authService.RegisterUserAsync(registrationDTO);
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] UserRegistrationDTO registrationDTO)
+    {
+        var result = await _authService.RegisterUserAsync(registrationDTO);
 
-		if (success)
-		{
-			return Ok(new { message = "User registered successfully" });
-		}
-		else
-		{
-			return BadRequest(new { error = errorMessage });
-		}
-	}
+        if (!result.Success)
+        {
+            return StatusCode(
+                (int)(result.HttpStatusCode ?? HttpStatusCode.BadRequest),
+                new { Message = result.ErrorMessage }
+            );
+        }
 
-	[HttpPost("login")]
-	public async Task<IActionResult> Login([FromBody] UserLoginDTO loginModel)
-	{
-		var result = await _authService.ValidateUserAsync(loginModel);
+        return StatusCode(
+            (int)(result.HttpStatusCode ?? HttpStatusCode.Created),
+            new { Message = result.Data }
+        );
+    }
 
-		if (!result.Success)
-		{
-			return Unauthorized(result.ErrorMessage);
-		}
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] UserLoginDTO loginModel)
+    {
+        var (result, token) = await _authService.ValidateUserAsync(loginModel);
 
-		var token = _authService.GenerateJwtToken(result.user.Id, result.user.Username);
-		return Ok(new { Token = token });
-	}
+        if (!result.Success)
+        {
+            return StatusCode(
+                (int)(result.HttpStatusCode ?? HttpStatusCode.Unauthorized),
+                new { Message = result.ErrorMessage }
+            );
+        }
+
+        return StatusCode(
+            (int)(result.HttpStatusCode ?? HttpStatusCode.OK),
+            new { Token = token }
+        );
+    }
 }

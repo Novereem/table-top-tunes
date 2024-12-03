@@ -7,10 +7,10 @@ using Shared.Interfaces.Data;
 using TTTBackend.Services.CommonServices;
 using Shared.Models.DTOs;
 using Shared.Models;
-using Shared.Interfaces.Services;
 using Shared.Models.Extensions;
 using Shared.Constants;
 using Shared.Enums;
+using Shared.Interfaces.Services.CommonServices;
 
 namespace TTTBackend.Tests.Services
 {

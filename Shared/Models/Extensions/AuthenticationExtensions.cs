@@ -1,4 +1,4 @@
-﻿using Shared.Interfaces.Services;
+﻿using Shared.Interfaces.Services.CommonServices;
 using Shared.Models.DTOs;
 using System;
 using System.Collections.Generic;
