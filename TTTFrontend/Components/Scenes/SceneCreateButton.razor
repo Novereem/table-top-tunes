@@ -26,12 +26,21 @@
                     <button type="button" class="btn-close" @onclick="CloseCreateSceneModal"></button>
                 </div>
                 <div class="modal-body">
-                    <label for="sceneName" class="form-label">Scene Name:</label>
-                    <input id="sceneName" class="form-control" @bind="NewSceneName" placeholder="Enter scene name" />
+                    <label for="sceneName" class="form-label">
+                        Scene Name: <span class="@(showSceneNameError ? "text-danger" : "text-dark")">*</span>
+                    </label>
+                    <input id="sceneName"
+                           class="@(showSceneNameError ? "form-control border-danger" : "form-control")"
+                           @bind="NewSceneName"
+                           placeholder="Enter scene name" />
+                    @if (showSceneNameError)
+                    {
+                        <small class="text-danger">Scene name is required.</small>
+                    }
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CloseCreateSceneModal">Cancel</button>
-                    <button class="btn btn-primary" @onclick="CreateScene">Create</button>
+                    <button class="btn btn-outline-dark" @onclick="CreateScene">Create</button>
                 </div>
             </div>
         </div>
@@ -43,6 +52,7 @@
 
     private bool IsModalVisible = false;
     private string NewSceneName = string.Empty;
+    private bool showSceneNameError = false;
 
     private void ShowCreateSceneModal()
     {
@@ -51,28 +61,30 @@
 
     private void CloseCreateSceneModal()
     {
+        showSceneNameError = false;
         IsModalVisible = false;
         NewSceneName = string.Empty;
     }
 
     private async Task CreateScene()
     {
-        if (!string.IsNullOrWhiteSpace(NewSceneName))
+        if (string.IsNullOrWhiteSpace(NewSceneName))
         {
-            var success = await SceneService.CreateSceneAsync(NewSceneName);
-            if (success)
-            {
-                await OnSceneCreated.InvokeAsync();
-                Console.WriteLine("Scene created successfully!");
-            }
-            else
-            {
-                Console.WriteLine("Failed to create the scene.");
-            }
+            showSceneNameError = true;
+            return;
+        }
+
+        showSceneNameError = false;
+
+        var success = await SceneService.CreateSceneAsync(NewSceneName);
+        if (success)
+        {
+            await OnSceneCreated.InvokeAsync();
+            Console.WriteLine("Scene created successfully!");
         }
         else
         {
-            Console.WriteLine("Scene name cannot be empty.");
+            Console.WriteLine("Failed to create the scene.");
         }
 
         CloseCreateSceneModal();

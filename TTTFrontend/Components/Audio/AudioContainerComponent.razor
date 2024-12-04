@@ -2,11 +2,16 @@
 @using TTTFrontend.Services;
 @inject SelectedSceneService SelectedSceneService
 
-<div class="d-flex justify-content-between">
-    <MusicSoundsComponent MusicTracks="SelectedSceneService.MusicTracks" />
-    <AmbientSoundsComponent AmbientSounds="SelectedSceneService.AmbientSounds" />
-    <ActionSoundsComponent ActionSounds="SelectedSceneService.ActionSounds" />
-    <SoundPresetsComponent />
+<div class="d-flex flex-column justify-content-between">
+    @if (SelectedSceneService.SelectedScene != null)
+    {
+        <div class="d-flex flex-row">
+            <MusicSoundsComponent MusicTracks="SelectedSceneService.MusicTracks" />
+            <AmbientSoundsComponent AmbientSounds="SelectedSceneService.AmbientSounds" />
+            <ActionSoundsComponent ActionSounds="SelectedSceneService.ActionSounds" />
+            <SoundPresetsComponent />
+        </div>
+    }
 </div>
 
 @code {
