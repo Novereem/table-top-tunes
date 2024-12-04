@@ -1,4 +1,5 @@
 ﻿using Shared.Models;
+using Shared.Models.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace Shared.Interfaces.Services
 {
     public interface IUserService
     {
-        Task<User> GetUserByIdAsync(Guid userId);
+        Task<ServiceResult<User>> GetUserByIdAsync(Guid userId);
     }
 }

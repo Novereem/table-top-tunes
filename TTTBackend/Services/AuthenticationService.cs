@@ -11,86 +11,84 @@ using Shared.Interfaces.Data;
 using Shared.Models.Extensions;
 using Shared.Constants;
 using Shared.Enums;
+using Shared.Models.Common;
+using Shared.Interfaces.Services.CommonServices;
+using TTTBackend.Services.Helpers;
 
 namespace TTTBackend.Services
 {
     public class AuthenticationService : IAuthenticationService
-	{
-		private readonly IAuthenticationData _authData;
-		private readonly IPasswordHashingService _passwordHashingService;
+    {
+        private readonly IAuthenticationData _authData;
+        private readonly IPasswordHashingService _passwordHashingService;
+        private readonly ILogger<AuthenticationService> _logger;
+        private readonly AuthenticationServiceHelper _helper;
 
-		public AuthenticationService(IAuthenticationData authData, IPasswordHashingService passwordHashingService)
-		{
-			_authData = authData;
-			_passwordHashingService = passwordHashingService;
-		}
-
-        public async Task<(bool Success, string ErrorMessage)> RegisterUserAsync(UserRegistrationDTO registrationDTO)
+        public AuthenticationService(
+            IAuthenticationData authData,
+            IPasswordHashingService passwordHashingService,
+            ILogger<AuthenticationService> logger
+        )
         {
-			try
-			{
-				var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
-
-				if (await _authData.GetUserByUsernameAsync(newUser.Username) != null)
-				{
-					return (false, ErrorMessages.GetErrorMessage(ErrorCode.UsernameTaken));
-				}
-				if (await _authData.GetUserByEmailAsync(newUser.Email) != null)
-				{
-					return (false, ErrorMessages.GetErrorMessage(ErrorCode.EmailAlreadyRegistered));
-				}
-
-				await _authData.RegisterUserAsync(newUser);
-				return (true, "Successful Registration");
-			}
-			catch (Exception ex)
-			{
-                return (false, ErrorMessages.GetErrorMessage(ErrorCode.UnknownError));
-            }
-            
+            _authData = authData;
+            _passwordHashingService = passwordHashingService;
+            _logger = logger;
+            _helper = new AuthenticationServiceHelper(authData, passwordHashingService, logger);
         }
 
-        public async Task<(bool Success, User? user, string? ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO)
+        public async Task<ServiceResult<string>> RegisterUserAsync(UserRegistrationDTO registrationDTO)
         {
-            var loginUser = loginDTO.ToUserFromLoginDTO(_passwordHashingService);
-
-            var user = await _authData.GetUserByUsernameAsync(loginUser.Username);
-
-            if (user == null || !_passwordHashingService.VerifyPassword(loginDTO.Password, user.PasswordHash))
+            var validationResult = await _helper.ValidateRegistrationAsync(registrationDTO);
+            if (!validationResult.Success)
             {
-                return (false, null, ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials));
+                return ServiceResult<string>.Failure(validationResult.ErrorMessage, validationResult.HttpStatusCode);
             }
 
-            return (true, user, null);
+            try
+            {
+                var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
+                await _authData.RegisterUserAsync(newUser);
+
+                return ServiceResult<string>.SuccessResult(
+                    SuccessMessages.GetSuccessMessage(SuccessCode.Register),
+                    HttpStatusCode.Created
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while registering user. Username: {Username}, Email: {Email}", registrationDTO.Username, registrationDTO.Email);
+                return ServiceResult<string>.Failure(
+                    ErrorMessages.GetErrorMessage(ErrorCode.UnknownError),
+                    HttpStatusCode.InternalServerError
+                );
+            }
         }
 
-        public string GenerateJwtToken(Guid userGuid, string username)
-		{
-			var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
-			if (string.IsNullOrEmpty(secretKey))
-			{
-				throw new InvalidOperationException("JWT secret key is not set in the .env file.");
-			}
+        public async Task<(ServiceResult<string>, string? token)> ValidateUserAsync(UserLoginDTO loginDTO)
+        {
+            var validationResult = await _helper.ValidateLoginAsync(loginDTO);
+            if (!validationResult.Success)
+            {
+                return (ServiceResult<string>.Failure(validationResult.ErrorMessage, validationResult.HttpStatusCode), null);
+            }
 
-			var claims = new[]
-			{
-			new Claim(ClaimTypes.Name, username),
-			new Claim(ClaimTypes.NameIdentifier, userGuid.ToString()),
-			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-		};
-
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-			var token = new JwtSecurityToken(
-				issuer: Environment.GetEnvironmentVariable("JWT_ISSUER"),
-				audience: Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
-				claims: claims,
-				expires: DateTime.Now.AddMinutes(1440),
-				signingCredentials: creds
-			);
-
-			return new JwtSecurityTokenHandler().WriteToken(token);
-		}
-	}
+            try
+            {
+                var user = validationResult.Data;
+                var token = _helper.GenerateJwtToken(user.Id, user.Username);
+                return (
+                    ServiceResult<string>.SuccessResult(
+                        SuccessMessages.GetSuccessMessage(SuccessCode.Login),
+                        HttpStatusCode.OK
+                    ),
+                    token
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while validating user. Username: {Username}", loginDTO.Username);
+                return (ServiceResult<string>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError),HttpStatusCode.InternalServerError), null);
+            }
+        }
+    }
 }

@@ -9,17 +9,28 @@ using TTTBackend.Services.CommonServices;
 using Shared.Interfaces.Services;
 using TTTBackend.Services;
 using Shared.Interfaces.Data;
+using Serilog;
+using Shared.Interfaces.Services.CommonServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    //.WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+builder.Host.UseSerilog();
+
+
 // Load environment variables
-DotNetEnv.Env.Load();
+Env.Load();
 
 // Services Registration
+builder.Services.AddScoped<IPasswordHashingService, PasswordHashingService>();
+builder.Services.AddSingleton<IUserClaimsService, UserClaimsService>();
+
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IAuthenticationData, AuthenticationData>();
-builder.Services.AddScoped<IPasswordHashingService, PasswordHashingService>();
-
 builder.Services.AddScoped<ISceneService, SceneService>();
 builder.Services.AddScoped<ISceneData, SceneData>();
 builder.Services.AddScoped<IUserService, UserService>();

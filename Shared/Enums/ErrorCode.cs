@@ -14,6 +14,13 @@ namespace Shared.Enums
         UnauthorizedAccess,
         InvalidInput,
         ResourceNotFound,
+        Database,
+        JWTNullOrEmpty,
+        MissingToken,
+        UnauthorizedToken,
+        UserNotFound,
+        AudioFileNotFound,
+        SceneNotFound,
         UnknownError
     }
 }

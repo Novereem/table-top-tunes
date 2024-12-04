@@ -1,4 +1,5 @@
 ﻿using Shared.Models;
+using Shared.Models.Common;
 using Shared.Models.DTOs;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,7 @@ namespace Shared.Interfaces.Services
 {
     public interface IAuthenticationService
     {
-		public Task<(bool Success, string ErrorMessage)> RegisterUserAsync(UserRegistrationDTO registrationDTO);
-        public Task<(bool Success, User? user, string? ErrorMessage)> ValidateUserAsync(UserLoginDTO loginDTO);
-
-        public string GenerateJwtToken(Guid username, string userGuid);
-
+		public Task<ServiceResult<string>> RegisterUserAsync(UserRegistrationDTO registrationDTO);
+        public Task<(ServiceResult<string>, string? token)> ValidateUserAsync(UserLoginDTO loginDTO);
 	}
 }

@@ -17,6 +17,13 @@ namespace Shared.Constants
             { ErrorCode.UnauthorizedAccess, "You are not authorized to access this resource." },
             { ErrorCode.InvalidInput, "The provided input is invalid." },
             { ErrorCode.ResourceNotFound, "The requested resource was not found." },
+            { ErrorCode.Database, "An error occurred in the database." },
+            { ErrorCode.JWTNullOrEmpty, "JWT secret key is not set in the .env file." },
+            { ErrorCode.MissingToken, "JWT secret key is not set in the .env file." },
+            { ErrorCode.UnauthorizedToken, "Invalid UserId claim." },
+            { ErrorCode.UserNotFound, "User not found." },
+            { ErrorCode.AudioFileNotFound, "Audio file not found." },
+            { ErrorCode.SceneNotFound, "Scene not found." },
             { ErrorCode.UnknownError, "An unknown error occurred. Please try again later." }
         };
 

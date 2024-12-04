@@ -5,13 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Shared.Models.Common;
+using System.Security.Claims;
 
 namespace Shared.Interfaces.Services
 {
     public interface ISceneService
     {
-        Task<SceneCreateResponseDTO> CreateSceneAsync(SceneCreateDTO sceneDTO, Guid userId);
-        Task<SceneGetResponseDTO?> GetSceneByIdAsync(Guid id);
-        Task<List<SceneListItemDTO>> GetScenesListByUserIdAsync(Guid userId);
+        Task<ServiceResult<SceneCreateResponseDTO>> CreateSceneAsync(SceneCreateDTO sceneDTO, ClaimsPrincipal user);
+        Task<ServiceResult<SceneGetResponseDTO>> GetSceneByIdAsync(Guid id);
+        Task<ServiceResult<List<SceneListItemDTO>>> GetScenesListByUserIdAsync(ClaimsPrincipal user);
     }
 }

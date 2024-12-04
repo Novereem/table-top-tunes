@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # Environment Variables
 .env
+
+# Logs
+logs/

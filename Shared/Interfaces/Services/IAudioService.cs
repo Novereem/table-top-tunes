@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Shared.Models.Common;
+using System.Security.Claims;
 
 namespace Shared.Interfaces.Services
 {
     public interface IAudioService
     {
-        Task<AudioFileResponseDTO> CreateAudioFileAsync(AudioFileCreateDTO audioFileCreateDTO, Guid userId);
-        Task<AudioFileResponseDTO> AssignAudioFileToSceneAsync(AudioFileAssignDTO assignDTO);
+        Task<ServiceResult<AudioFileResponseDTO>> CreateAudioFileAsync(AudioFileCreateDTO audioFileCreateDTO, ClaimsPrincipal user);
+        Task<ServiceResult<AudioFileResponseDTO>> AssignAudioFileToSceneAsync(AudioFileAssignDTO assignDTO);
     }
 }
