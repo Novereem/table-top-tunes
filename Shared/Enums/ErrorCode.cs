@@ -18,6 +18,7 @@ namespace Shared.Enums
         JWTNullOrEmpty,
         MissingToken,
         UnauthorizedToken,
+        UserNotFound,
         UnknownError
     }
 }

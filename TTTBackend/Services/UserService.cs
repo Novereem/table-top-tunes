@@ -7,10 +7,12 @@ namespace TTTBackend.Services
     public class UserService : IUserService
     {
         private readonly IUserData _userData;
+        private readonly ILogger<AuthenticationService> _logger;
 
-        public UserService(IUserData userData)
+        public UserService(IUserData userData, ILogger<AuthenticationService> logger)
         {
             _userData = userData;
+            _logger = logger;
         }
 
         public async Task<User> GetUserByIdAsync(Guid userId)

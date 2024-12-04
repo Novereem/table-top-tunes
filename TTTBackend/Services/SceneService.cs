@@ -39,10 +39,14 @@ namespace TTTBackend.Services
 
             try
             {
-                var userEntity = await _userService.GetUserByIdAsync(userIdResult.Data);
+                var userResult = await _userService.GetUserByIdAsync(userIdResult.Data);
+                if (!userResult.Success || userResult.Data == null)
+                {
+                    return ServiceResult<SceneCreateResponseDTO>.Failure(userResult.ErrorMessage, userResult.HttpStatusCode);
+                }
 
                 var newScene = sceneDTO.ToSceneFromSceneCreateDTO();
-                newScene.User = userEntity;
+                newScene.User = userResult.Data;
                 newScene.CreatedAt = DateTime.UtcNow;
 
                 var createdScene = await _sceneData.CreateSceneAsync(newScene);

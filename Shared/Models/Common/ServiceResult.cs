@@ -23,11 +23,9 @@ namespace Shared.Models.Common
             HttpStatusCode = httpStatusCode;
         }
 
-        // For successful results
         public static ServiceResult<T> SuccessResult(T? data = default, HttpStatusCode? httpStatusCode = null) =>
             new ServiceResult<T>(data, true, string.Empty, httpStatusCode);
 
-        // For failed results
         public static ServiceResult<T> Failure(string errorMessage, HttpStatusCode? httpStatusCode = null) =>
             new ServiceResult<T>(default, false, errorMessage, httpStatusCode);
     }

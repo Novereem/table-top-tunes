@@ -21,6 +21,7 @@ namespace Shared.Constants
             { ErrorCode.JWTNullOrEmpty, "JWT secret key is not set in the .env file." },
             { ErrorCode.MissingToken, "JWT secret key is not set in the .env file." },
             { ErrorCode.UnauthorizedToken, "Invalid UserId claim." },
+            { ErrorCode.UserNotFound, "User not found." },
             { ErrorCode.UnknownError, "An unknown error occurred. Please try again later." }
         };
 
