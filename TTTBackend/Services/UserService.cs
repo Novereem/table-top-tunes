@@ -1,6 +1,9 @@
-﻿using Shared.Interfaces.Data;
+﻿using Shared.Constants;
+using Shared.Enums;
+using Shared.Interfaces.Data;
 using Shared.Interfaces.Services;
 using Shared.Models;
+using Shared.Models.Common;
 
 namespace TTTBackend.Services
 {
@@ -15,16 +18,19 @@ namespace TTTBackend.Services
             _logger = logger;
         }
 
-        public async Task<User> GetUserByIdAsync(Guid userId)
+        public async Task<ServiceResult<User>> GetUserByIdAsync(Guid userId)
         {
             var user = await _userData.GetUserByIdAsync(userId);
 
             if (user == null)
             {
-                throw new Exception("User not found.");
+                return ServiceResult<User>.Failure(
+                    ErrorMessages.GetErrorMessage(ErrorCode.UserNotFound),
+                    HttpStatusCode.NotFound
+                );
             }
 
-            return user;
+            return ServiceResult<User>.SuccessResult(user, HttpStatusCode.OK);
         }
     }
 }
