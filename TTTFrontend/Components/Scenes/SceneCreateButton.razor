@@ -1,27 +1,92 @@
 ﻿@using TTTFrontend.Services
 @inject SceneService SceneService
 
-<div class="mt-4 mx-5">
-	<div class="scene-hover-effect" @onclick="CreateScene">
-		<div class="d-flex justify-content-center border py-5 lh-tight">
-			<h5 class="m-0 my-3">New Scene</h5>
-		</div>
-	</div>
+<div class="mt-4 mx-5 mb-4">
+    <div class="scene-hover-effect" @onclick="ShowCreateSceneModal">
+        <div class="d-flex flex-column text-center justify-content-center border py-5 lh-tight">
+            <h2 class="m-0 my-3">+</h2>
+            <div class="text-center text-muted">
+                <small>Create a new scene</small>
+            </div>
+        </div>
+    </div>
 </div>
 
+@if (IsModalVisible)
+{
+    <!-- Modal Backdrop -->
+    <div class="modal-backdrop fade show" style="z-index: 1040;"></div>
+
+    <!-- Modal -->
+    <div class="modal show d-block" tabindex="-1" style="z-index: 1050;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Scene</h5>
+                    <button type="button" class="btn-close" @onclick="CloseCreateSceneModal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="sceneName" class="form-label">
+                        Scene Name: <span class="@(showSceneNameError ? "text-danger" : "text-dark")">*</span>
+                    </label>
+                    <input id="sceneName"
+                           class="@(showSceneNameError ? "form-control border-danger" : "form-control")"
+                           @bind="NewSceneName"
+                           placeholder="Enter scene name" />
+                    @if (showSceneNameError)
+                    {
+                        <small class="text-danger">Scene name is required.</small>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseCreateSceneModal">Cancel</button>
+                    <button class="btn btn-outline-dark" @onclick="CreateScene">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
+    [Parameter] public EventCallback OnSceneCreated { get; set; }
+
+    private bool IsModalVisible = false;
+    private string NewSceneName = string.Empty;
+    private bool showSceneNameError = false;
+
+    private void ShowCreateSceneModal()
+    {
+        IsModalVisible = true;
+    }
+
+    private void CloseCreateSceneModal()
+    {
+        showSceneNameError = false;
+        IsModalVisible = false;
+        NewSceneName = string.Empty;
+    }
+
     private async Task CreateScene()
     {
-        // Call the service to create a new scene
-        var success = await SceneService.CreateSceneAsync("New Awesome Scene");
+        if (string.IsNullOrWhiteSpace(NewSceneName))
+        {
+            showSceneNameError = true;
+            return;
+        }
 
+        showSceneNameError = false;
+
+        var success = await SceneService.CreateSceneAsync(NewSceneName);
         if (success)
         {
+            await OnSceneCreated.InvokeAsync();
             Console.WriteLine("Scene created successfully!");
         }
         else
         {
             Console.WriteLine("Failed to create the scene.");
         }
+
+        CloseCreateSceneModal();
     }
 }
