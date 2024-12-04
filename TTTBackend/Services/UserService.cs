@@ -10,9 +10,9 @@ namespace TTTBackend.Services
     public class UserService : IUserService
     {
         private readonly IUserData _userData;
-        private readonly ILogger<AuthenticationService> _logger;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IUserData userData, ILogger<AuthenticationService> logger)
+        public UserService(IUserData userData, ILogger<UserService> logger)
         {
             _userData = userData;
             _logger = logger;

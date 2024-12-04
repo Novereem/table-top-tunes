@@ -13,8 +13,5 @@ namespace Shared.Interfaces.Services
     {
 		public Task<ServiceResult<string>> RegisterUserAsync(UserRegistrationDTO registrationDTO);
         public Task<(ServiceResult<string>, string? token)> ValidateUserAsync(UserLoginDTO loginDTO);
-
-        public string GenerateJwtToken(Guid username, string userGuid);
-
 	}
 }

@@ -11,6 +11,7 @@ using System.Security.Claims;
 using Shared.Interfaces.Services.CommonServices;
 using TTTBackend.Services.CommonServices;
 using Shared.Constants;
+using TTTBackend.Services.Helpers;
 
 namespace TTTBackend.Services
 {
@@ -19,14 +20,16 @@ namespace TTTBackend.Services
         private readonly ISceneData _sceneData;
         private readonly IUserService _userService;
         private readonly IUserClaimsService _userClaimsService;
-        private readonly ILogger<AuthenticationService> _logger;
+        private readonly ILogger<SceneService> _logger;
+        private readonly SceneServiceHelper _helper;
 
-        public SceneService(ISceneData sceneData, IUserService userService, IUserClaimsService userClaimsService, ILogger<AuthenticationService> logger)
+        public SceneService(ISceneData sceneData, IUserService userService, IUserClaimsService userClaimsService, ILogger<SceneService> logger)
         {
             _sceneData = sceneData;
             _userService = userService;
             _userClaimsService = userClaimsService;
             _logger = logger;
+            _helper = new SceneServiceHelper(sceneData, logger);
         }
 
         public async Task<ServiceResult<SceneCreateResponseDTO>> CreateSceneAsync(SceneCreateDTO sceneDTO, ClaimsPrincipal user)
@@ -45,19 +48,19 @@ namespace TTTBackend.Services
                     return ServiceResult<SceneCreateResponseDTO>.Failure(userResult.ErrorMessage, userResult.HttpStatusCode);
                 }
 
-                var newScene = sceneDTO.ToSceneFromSceneCreateDTO();
-                newScene.User = userResult.Data;
-                newScene.CreatedAt = DateTime.UtcNow;
-
-                var createdScene = await _sceneData.CreateSceneAsync(newScene);
-
-                if (createdScene == null)
+                var validationResult = _helper.ValidateSceneCreateRequest(sceneDTO);
+                if (!validationResult.Success)
                 {
-                    _logger.LogError("Failed to create scene. SceneData returned null for Name: {Name}", sceneDTO.Name);
-                    return ServiceResult<SceneCreateResponseDTO>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError), HttpStatusCode.InternalServerError);
+                    return ServiceResult<SceneCreateResponseDTO>.Failure(validationResult.ErrorMessage, HttpStatusCode.BadRequest);
                 }
 
-                return ServiceResult<SceneCreateResponseDTO>.SuccessResult(createdScene.ToSceneCreateResponseDTOFromScene(), HttpStatusCode.Created);
+                var createdSceneResult = await _helper.CreateSceneAsync(sceneDTO, userResult.Data);
+                if (!createdSceneResult.Success)
+                {
+                    return ServiceResult<SceneCreateResponseDTO>.Failure(createdSceneResult.ErrorMessage, createdSceneResult.HttpStatusCode);
+                }
+
+                return ServiceResult<SceneCreateResponseDTO>.SuccessResult(createdSceneResult.Data, HttpStatusCode.Created);
             }
             catch (Exception ex)
             {
@@ -70,14 +73,13 @@ namespace TTTBackend.Services
         {
             try
             {
-                var scene = await _sceneData.GetSceneByIdAsync(id);
-
-                if (scene == null)
+                var sceneResult = await _helper.RetrieveSceneByIdAsync(id);
+                if (!sceneResult.Success)
                 {
-                    return ServiceResult<SceneGetResponseDTO>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.ResourceNotFound), HttpStatusCode.NotFound);
+                    return ServiceResult<SceneGetResponseDTO>.Failure(sceneResult.ErrorMessage, sceneResult.HttpStatusCode);
                 }
 
-                return ServiceResult<SceneGetResponseDTO>.SuccessResult(scene.ToSceneGetResponseDTOFromScene());
+                return ServiceResult<SceneGetResponseDTO>.SuccessResult(sceneResult.Data.ToSceneGetResponseDTOFromScene());
             }
             catch (Exception ex)
             {
@@ -96,9 +98,13 @@ namespace TTTBackend.Services
 
             try
             {
-                var scenes = await _sceneData.GetScenesByUserIdAsync(userIdResult.Data);
+                var scenesResult = await _helper.RetrieveScenesByUserIdAsync(userIdResult.Data);
+                if (!scenesResult.Success)
+                {
+                    return ServiceResult<List<SceneListItemDTO>>.Failure(scenesResult.ErrorMessage);
+                }
 
-                var sceneListItems = scenes.Select(scene => scene.ToSceneListItemDTOFromScene()).ToList();
+                var sceneListItems = scenesResult.Data!.Select(scene => scene.ToSceneListItemDTOFromScene()).ToList();
 
                 return ServiceResult<List<SceneListItemDTO>>.SuccessResult(sceneListItems);
             }
@@ -109,4 +115,5 @@ namespace TTTBackend.Services
             }
         }
     }
+
 }
