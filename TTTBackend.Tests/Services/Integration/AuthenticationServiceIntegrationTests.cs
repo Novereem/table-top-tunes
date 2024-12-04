@@ -13,13 +13,11 @@ using System.Threading.Tasks;
 using TTTBackend.Data;
 using TTTBackend.Services;
 using TTTBackend.Services.CommonServices;
-using DotNetEnv;
 
 namespace TTTBackend.Tests.Services.Integration
 {
     public class AuthenticationServiceIntegrationTests
     {
-        
         private readonly AuthenticationService _authService;
         private readonly ApplicationDbContext _dbContext;
         private readonly IAuthenticationData _authData;
@@ -27,8 +25,10 @@ namespace TTTBackend.Tests.Services.Integration
 
         public AuthenticationServiceIntegrationTests()
         {
-            //Load .env file
-            Env.Load();
+            // Set environment variables for JWT configuration
+            Environment.SetEnvironmentVariable("JWT_SECRET_KEY", "test-secret-key-that-is-very-long-because-it-needs-to-be");
+            Environment.SetEnvironmentVariable("JWT_ISSUER", "test-issuer");
+            Environment.SetEnvironmentVariable("JWT_AUDIENCE", "test-audience");
 
             // Set up an in-memory database
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
