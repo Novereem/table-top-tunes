@@ -43,7 +43,11 @@ namespace TTTFrontend.Services
                 }
             }
 
-            var errorMessage = await response.Content.ReadAsStringAsync();
+            var errorResponse = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+            var errorMessage = errorResponse != null && errorResponse.ContainsKey("message")
+                ? errorResponse["message"]
+                : "An unknown error occurred.";
+
             return new LoginResponseDTO
             {
                 Success = false,
