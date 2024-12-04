@@ -1,17 +1,30 @@
 ﻿@using Shared.Models.DTOs
+@using Microsoft.AspNetCore.Components
 
-<div class="mt-4 mx-5">
+<div class="mt-4 mx-5" @onclick="OnClick" style="cursor: pointer;">
     <div class="scene-hover-effect">
-        <div class="d-flex justify-content-center border py-5 lh-tight">
+        <div class="d-flex flex-column justify-content-center border py-5 lh-tight">
             <h5 class="m-0 my-3">@Scene.Name</h5>
+            <div class="text-center text-muted">
+                <small>Created: @Scene.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+            </div>
         </div>
-        <div class="text-center text-muted">
-            <small>Created: @Scene.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
-        </div>
+        
     </div>
 </div>
 
 @code {
     [Parameter]
-    public SceneGetResponseDTO Scene { get; set; }
+    public SceneListItemDTO Scene { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnSceneSelected { get; set; }
+
+    private async Task OnClick()
+    {
+        if (OnSceneSelected.HasDelegate)
+        {
+            await OnSceneSelected.InvokeAsync(Scene.Id);
+        }
+    }
 }

@@ -1,10 +1,13 @@
 ﻿@using TTTFrontend.Services
 @inject SceneService SceneService
 
-<div class="mt-4 mx-5">
+<div class="mt-4 mx-5 mb-4">
     <div class="scene-hover-effect" @onclick="ShowCreateSceneModal">
-        <div class="d-flex justify-content-center border py-5 lh-tight">
-            <h5 class="m-0 my-3">New Scene</h5>
+        <div class="d-flex flex-column text-center justify-content-center border py-5 lh-tight">
+            <h2 class="m-0 my-3">+</h2>
+            <div class="text-center text-muted">
+                <small>Create a new scene</small>
+            </div>
         </div>
     </div>
 </div>

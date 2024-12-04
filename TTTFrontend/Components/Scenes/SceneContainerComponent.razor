@@ -23,10 +23,7 @@
         {
             @foreach (var scene in Scenes)
             {
-                <button class="list-group-item list-group-item-action"
-                        @onclick="() => LoadSceneDetails(scene.Id)">
-                    @scene.Name (@scene.CreatedAt.ToString("yyyy-MM-dd"))
-                </button>
+                <SceneComponent Scene="scene" OnSceneSelected="LoadSceneDetails" />
             }
         }
         <SceneCreateButton OnSceneCreated="RefreshSceneList" />
