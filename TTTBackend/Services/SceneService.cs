@@ -79,7 +79,7 @@ namespace TTTBackend.Services
                     return ServiceResult<SceneGetResponseDTO>.Failure(sceneResult.ErrorMessage, sceneResult.HttpStatusCode);
                 }
 
-                return ServiceResult<SceneGetResponseDTO>.SuccessResult(sceneResult.Data.ToSceneGetResponseDTOFromScene());
+                return ServiceResult<SceneGetResponseDTO>.SuccessResult(sceneResult.Data.ToSceneGetResponseDTO());
             }
             catch (Exception ex)
             {
@@ -104,7 +104,7 @@ namespace TTTBackend.Services
                     return ServiceResult<List<SceneListItemDTO>>.Failure(scenesResult.ErrorMessage);
                 }
 
-                var sceneListItems = scenesResult.Data!.Select(scene => scene.ToSceneListItemDTOFromScene()).ToList();
+                var sceneListItems = scenesResult.Data!.Select(scene => scene.ToSceneListItemDTO()).ToList();
 
                 return ServiceResult<List<SceneListItemDTO>>.SuccessResult(sceneListItems);
             }

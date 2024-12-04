@@ -11,14 +11,14 @@ namespace Shared.Models.Extensions
 {
     public static class SceneExtensions
     {
-        public static Scene ToSceneFromSceneCreateDTO(this SceneCreateDTO dto)
+        public static Scene ToSceneFromCreateDTO(this SceneCreateDTO dto)
         {
             return new Scene
             {
                 Name = dto.Name
             };
         }
-        public static SceneCreateResponseDTO ToSceneCreateResponseDTOFromScene(this Scene scene)
+        public static SceneCreateResponseDTO ToCreateResponseDTO(this Scene scene)
         {
             return new SceneCreateResponseDTO
 			{
@@ -27,7 +27,7 @@ namespace Shared.Models.Extensions
             };
         }
 
-        public static SceneGetResponseDTO? ToSceneGetResponseDTOFromScene(this Scene? scene)
+        public static SceneGetResponseDTO? ToSceneGetResponseDTO(this Scene? scene)
         {
             if (scene == null) return null;
 
@@ -41,7 +41,7 @@ namespace Shared.Models.Extensions
             };
         }
 
-        public static SceneListItemDTO ToSceneListItemDTOFromScene(this Scene scene)
+        public static SceneListItemDTO ToSceneListItemDTO(this Scene scene)
         {
             return new SceneListItemDTO
             {

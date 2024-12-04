@@ -34,7 +34,7 @@ namespace TTTBackend.Services.Helpers
         {
             try
             {
-                var newScene = sceneDTO.ToSceneFromSceneCreateDTO();
+                var newScene = sceneDTO.ToSceneFromCreateDTO();
                 newScene.User = user;
                 newScene.CreatedAt = DateTime.UtcNow;
 
@@ -45,7 +45,7 @@ namespace TTTBackend.Services.Helpers
                     return ServiceResult<SceneCreateResponseDTO>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError), HttpStatusCode.InternalServerError);
                 }
 
-                return ServiceResult<SceneCreateResponseDTO>.SuccessResult(createdScene.ToSceneCreateResponseDTOFromScene());
+                return ServiceResult<SceneCreateResponseDTO>.SuccessResult(createdScene.ToCreateResponseDTO());
             }
             catch (Exception ex)
             {
