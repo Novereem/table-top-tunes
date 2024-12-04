@@ -19,6 +19,8 @@ namespace Shared.Enums
         MissingToken,
         UnauthorizedToken,
         UserNotFound,
+        AudioFileNotFound,
+        SceneNotFound,
         UnknownError
     }
 }

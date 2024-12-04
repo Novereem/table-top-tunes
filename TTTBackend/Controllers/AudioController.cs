@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Enums;
 using Shared.Interfaces.Services;
 using Shared.Models.DTOs;
 using System.Security.Claims;
@@ -21,38 +22,27 @@ namespace TTTBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAudioFile([FromBody] AudioFileCreateDTO audioFileCreateDTO)
         {
-            try
+            var result = await _audioService.CreateAudioFileAsync(audioFileCreateDTO, User);
+
+            if (!result.Success)
             {
-                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                if (userIdClaim == null)
-                {
-                    return Unauthorized(new { Message = "User ID claim missing in token." });
-                }
-
-                var userId = Guid.Parse(userIdClaim.Value);
-
-                var response = await _audioService.CreateAudioFileAsync(audioFileCreateDTO, userId);
-
-                return Ok(response);
+                return StatusCode((int)(result.HttpStatusCode ?? HttpStatusCode.BadRequest), new { Message = result.ErrorMessage });
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
+
+            return StatusCode((int)(result.HttpStatusCode ?? HttpStatusCode.Created), result.Data);
         }
 
         [HttpPut("assign")]
         public async Task<IActionResult> AssignAudioFileToScene([FromBody] AudioFileAssignDTO assignDTO)
         {
-            try
+            var result = await _audioService.AssignAudioFileToSceneAsync(assignDTO);
+
+            if (!result.Success)
             {
-                var response = await _audioService.AssignAudioFileToSceneAsync(assignDTO);
-                return Ok(response);
+                return StatusCode((int)(result.HttpStatusCode ?? HttpStatusCode.BadRequest), new { Message = result.ErrorMessage });
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
+
+            return Ok(result.Data);
         }
     }
 }
