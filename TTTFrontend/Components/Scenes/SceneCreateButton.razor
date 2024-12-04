@@ -2,26 +2,75 @@
 @inject SceneService SceneService
 
 <div class="mt-4 mx-5">
-	<div class="scene-hover-effect" @onclick="CreateScene">
-		<div class="d-flex justify-content-center border py-5 lh-tight">
-			<h5 class="m-0 my-3">New Scene</h5>
-		</div>
-	</div>
+    <div class="scene-hover-effect" @onclick="ShowCreateSceneModal">
+        <div class="d-flex justify-content-center border py-5 lh-tight">
+            <h5 class="m-0 my-3">New Scene</h5>
+        </div>
+    </div>
 </div>
 
+<!-- Modal Popup -->
+@if (IsModalVisible)
+{
+    <!-- Backdrop -->
+    <div class="modal-backdrop fade show" style="z-index: 1040;"></div>
+
+    <!-- Modal -->
+    <div class="modal show d-block" tabindex="-1" style="z-index: 1050;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Scene</h5>
+                    <button type="button" class="btn-close" @onclick="CloseCreateSceneModal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="sceneName" class="form-label">Scene Name:</label>
+                    <input id="sceneName" class="form-control" @bind="NewSceneName" placeholder="Enter scene name" />
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseCreateSceneModal">Cancel</button>
+                    <button class="btn btn-primary" @onclick="CreateScene">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
+    private bool IsModalVisible = false;
+    private string NewSceneName = string.Empty;
+
+    private void ShowCreateSceneModal()
+    {
+        IsModalVisible = true;
+    }
+
+    private void CloseCreateSceneModal()
+    {
+        IsModalVisible = false;
+        NewSceneName = string.Empty; // Reset the input
+    }
+
     private async Task CreateScene()
     {
-        // Call the service to create a new scene
-        var success = await SceneService.CreateSceneAsync("New Awesome Scene");
-
-        if (success)
+        if (!string.IsNullOrWhiteSpace(NewSceneName))
         {
-            Console.WriteLine("Scene created successfully!");
+            var success = await SceneService.CreateSceneAsync(NewSceneName);
+            if (success)
+            {
+                Console.WriteLine("Scene created successfully!");
+            }
+            else
+            {
+                Console.WriteLine("Failed to create the scene.");
+            }
         }
         else
         {
-            Console.WriteLine("Failed to create the scene.");
+            Console.WriteLine("Scene name cannot be empty.");
         }
+
+        // Close the modal after creation
+        CloseCreateSceneModal();
     }
 }
