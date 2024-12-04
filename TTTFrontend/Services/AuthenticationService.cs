@@ -55,6 +55,30 @@ namespace TTTFrontend.Services
             };
         }
 
+        public async Task<RegisterResponseDTO> Register(UserRegistrationDTO registerModel)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/Authentication/register", registerModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return new RegisterResponseDTO
+                {
+                    Success = true
+                };
+            }
+
+            var errorResponse = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+            var errorMessage = errorResponse != null && errorResponse.ContainsKey("Message")
+                ? errorResponse["Message"]
+                : "An unknown error occurred.";
+
+            return new RegisterResponseDTO
+            {
+                Success = false,
+                ErrorMessage = errorMessage
+            };
+        }
+
         public void Logout()
         {
             _localStorage.RemoveItem("authToken");

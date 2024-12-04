@@ -69,10 +69,11 @@ namespace TTTBackend.Services.Helpers
         public async Task<ServiceResult<List<Scene>>> RetrieveScenesByUserIdAsync(Guid userId)
         {
             var scenes = await _sceneData.GetScenesByUserIdAsync(userId);
-            if (scenes == null || !scenes.Any())
+
+            if (scenes == null)
             {
                 _logger.LogWarning("No scenes found for user. UserId: {UserId}", userId);
-                return ServiceResult<List<Scene>>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.ResourceNotFound));
+                scenes = new List<Scene>();
             }
 
             return ServiceResult<List<Scene>>.SuccessResult(scenes);
