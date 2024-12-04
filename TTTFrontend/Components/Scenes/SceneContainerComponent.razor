@@ -29,7 +29,7 @@
                 </button>
             }
         }
-        <SceneCreateButton />
+        <SceneCreateButton OnSceneCreated="RefreshSceneList" />
     </div>
 </div>
 
@@ -37,6 +37,11 @@
     private List<SceneListItemDTO> Scenes;
 
     protected override async Task OnInitializedAsync()
+    {
+        await RefreshSceneList();
+    }
+
+    private async Task RefreshSceneList()
     {
         Scenes = await SceneService.GetScenesListAsync();
     }

@@ -107,6 +107,6 @@ code {
     transition: background-color 0.15s ease;
 }
 
-    .scene-hover-effect:hover {
-        background-color: rgba(0, 0, 0, 0.10);
-    }
+.scene-hover-effect:hover {
+    background-color: rgba(0, 0, 0, 0.10);
+}
