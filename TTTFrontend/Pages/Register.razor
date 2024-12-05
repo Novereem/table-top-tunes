@@ -125,7 +125,6 @@
         var response = await AuthService.Register(registerModel);
         if (response.Success)
         {
-            // Optionally, log the user in immediately or navigate to the login page
             NavigationManager.NavigateTo("/login");
         }
         else
