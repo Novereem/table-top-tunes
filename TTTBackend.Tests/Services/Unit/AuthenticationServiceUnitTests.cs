@@ -7,70 +7,100 @@ using Shared.Interfaces.Services.CommonServices;
 using Shared.Models.DTOs;
 using Shared.Models;
 using TTTBackend.Services;
+using Shared.Factories;
+using Shared.Models.Common;
+using TTTBackend.Services.Helpers;
+using Shared.Interfaces.Services.Helpers;
 
 namespace TTTBackend.Tests.Services.Unit
 {
-    public class AuthenticationServiceUnitTests
+    public class AuthenticationServiceTests
     {
         private readonly Mock<IAuthenticationData> _mockAuthData;
         private readonly Mock<IPasswordHashingService> _mockPasswordHashingService;
         private readonly Mock<ILogger<AuthenticationService>> _mockLogger;
+        private readonly Mock<IAuthenticationServiceHelper> _mockHelper;
         private readonly AuthenticationService _authService;
 
-        public AuthenticationServiceUnitTests()
+        public AuthenticationServiceTests()
         {
             _mockAuthData = new Mock<IAuthenticationData>();
             _mockPasswordHashingService = new Mock<IPasswordHashingService>();
             _mockLogger = new Mock<ILogger<AuthenticationService>>();
+            _mockHelper = new Mock<IAuthenticationServiceHelper>();
+
             _authService = new AuthenticationService(
                 _mockAuthData.Object,
                 _mockPasswordHashingService.Object,
-                _mockLogger.Object
+                _mockLogger.Object,
+                _mockHelper.Object
             );
         }
 
         [Fact]
-        public async Task RegisterUserAsync_ShouldReturnSuccess_WhenValidUserIsRegistered()
+        public async Task RegisterUserAsync_ShouldReturnSuccess_WhenUserIsNew()
         {
-            var registrationDTO = new UserRegistrationDTO { Username = "testuser", Email = "test@example.com", Password = "password" };
+            var dto = new UserRegistrationDTO { Username = "newuser", Email = "new@example.com", Password = "Pass123" };
 
-            _mockAuthData.Setup(a => a.GetUserByUsernameAsync(registrationDTO.Username)).ReturnsAsync((User?)null);
-            _mockAuthData.Setup(a => a.GetUserByEmailAsync(registrationDTO.Email)).ReturnsAsync((User?)null);
+            _mockHelper.Setup(h => h.ValidateRegistrationAsync(dto))
+                .ReturnsAsync(ServiceResult<object>.SuccessResult());
 
-            var result = await _authService.RegisterUserAsync(registrationDTO);
+            _mockPasswordHashingService.Setup(p => p.HashPassword(dto.Password))
+                .Returns("hashedpass");
+
+            _mockAuthData.Setup(a => a.RegisterUserAsync(It.IsAny<User>()))
+                .Returns(Task.CompletedTask);
+
+            var result = await _authService.RegisterUserAsync(dto);
 
             Assert.True(result.Success);
-            Assert.Equal(SuccessMessages.GetSuccessMessage(SuccessCode.Register), result.Data);
+            Assert.Equal(HttpStatusCode.Created, result.HttpStatusCode);
         }
 
         [Fact]
-        public async Task RegisterUserAsync_ShouldReturnFailure_WhenUsernameExists()
+        public async Task RegisterUserAsync_ShouldReturnFailure_WhenUsernameTaken()
         {
-            var registrationDTO = new UserRegistrationDTO { Username = "existinguser", Email = "test@example.com", Password = "password" };
-            var existingUser = new User("existinguser", "existing@example.com", "hashedPassword");
+            var dto = new UserRegistrationDTO { Username = "taken", Email = "test@example.com", Password = "Pass123" };
 
-            _mockAuthData.Setup(a => a.GetUserByUsernameAsync(registrationDTO.Username)).ReturnsAsync(existingUser);
+            _mockHelper.Setup(h => h.ValidateRegistrationAsync(dto))
+                .ReturnsAsync(PredefinedFailures.GetFailure<object>(ErrorCode.UsernameTaken));
 
-            var result = await _authService.RegisterUserAsync(registrationDTO);
+            var result = await _authService.RegisterUserAsync(dto);
 
             Assert.False(result.Success);
-            Assert.Equal(ErrorMessages.GetErrorMessage(ErrorCode.UsernameTaken), result.ErrorMessage);
+            Assert.Equal(ErrorCode.UsernameTaken, result.ErrorCode);
         }
 
         [Fact]
-        public async Task ValidateUserAsync_ShouldReturnFailure_WhenInvalidCredentialsAreProvided()
+        public async Task ValidateUserAsync_ShouldReturnSuccess_WhenCredentialsAreValid()
         {
-            var loginDTO = new UserLoginDTO { Username = "testuser", Password = "wrongpassword" };
-            var user = new User("testuser", "test@example.com", "hashedPassword");
+            var dto = new UserLoginDTO { Username = "validuser", Password = "Pass123" };
+            var user = new User("validuser", "valid@example.com", "hashedpass");
 
-            _mockAuthData.Setup(a => a.GetUserByUsernameAsync(loginDTO.Username)).ReturnsAsync(user);
-            _mockPasswordHashingService.Setup(p => p.VerifyPassword(loginDTO.Password, user.PasswordHash)).Returns(false);
+            _mockHelper.Setup(h => h.ValidateLoginAsync(dto))
+                .ReturnsAsync(ServiceResult<User>.SuccessResult(user));
 
-            var (result, token) = await _authService.ValidateUserAsync(loginDTO);
+            _mockHelper.Setup(h => h.GenerateJwtToken(user.Id, user.Username))
+                .Returns(ServiceResult<string>.SuccessResult("valid.jwt.token"));
+
+            var result = await _authService.ValidateUserAsync(dto);
+
+            Assert.True(result.Success);
+            Assert.NotNull(result.Data.Token);
+        }
+
+        [Fact]
+        public async Task GetUserByIdAsync_ShouldReturnFailure_WhenUserNotFound()
+        {
+            var userId = Guid.NewGuid();
+
+            _mockAuthData.Setup(a => a.GetUserByIdAsync(userId))
+                .ReturnsAsync((User?)null);
+
+            var result = await _authService.GetUserByIdAsync(userId);
 
             Assert.False(result.Success);
-            Assert.Null(token);
-            Assert.Equal(ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials), result.ErrorMessage);
+            Assert.Equal(ErrorCode.ResourceNotFound, result.ErrorCode);
         }
     }
 }

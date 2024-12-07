@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Shared.Enums
 {
-    public enum SuccessCode
+    public enum SuccessCodeUser
     {
         //Authentication
         Register,
@@ -17,8 +17,5 @@ namespace Shared.Enums
 
         //Audio
         AudioCreated,
-
-        //Common
-        Success,
     }
 }

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using TTTBackend.Data;
 using TTTBackend.Services;
 using TTTBackend.Services.CommonServices;
+using TTTBackend.Services.Helpers;
 
 namespace TTTBackend.Tests.Services.Integration
 {
@@ -21,31 +22,31 @@ namespace TTTBackend.Tests.Services.Integration
         private readonly AuthenticationService _authService;
         private readonly ApplicationDbContext _dbContext;
         private readonly IAuthenticationData _authData;
-        private readonly ILogger<AuthenticationService> _logger;
 
         public AuthenticationServiceIntegrationTests()
         {
-            // Set environment variables for JWT configuration
             Environment.SetEnvironmentVariable("JWT_SECRET_KEY", "test-secret-key-that-is-very-long-because-it-needs-to-be");
             Environment.SetEnvironmentVariable("JWT_ISSUER", "test-issuer");
             Environment.SetEnvironmentVariable("JWT_AUDIENCE", "test-audience");
 
-            // Set up an in-memory database
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .UseInMemoryDatabase("TestDatabase_Integration")
                 .Options;
 
             _dbContext = new ApplicationDbContext(options);
             _authData = new AuthenticationData(_dbContext);
 
-            // Set up a logger
-            _logger = new LoggerFactory().CreateLogger<AuthenticationService>();
+            var loggerAuthService = LoggerFactory.Create(builder => { }).CreateLogger<AuthenticationService>();
+            var loggerHelper = LoggerFactory.Create(builder => { }).CreateLogger<AuthenticationServiceHelper>();
 
-            // Create the service
+            var passwordHashingService = new PasswordHashingService();
+            var helper = new AuthenticationServiceHelper(_authData, passwordHashingService, loggerHelper);
+
             _authService = new AuthenticationService(
                 _authData,
-                new PasswordHashingService(),
-                _logger
+                passwordHashingService,
+                loggerAuthService,
+                helper
             );
         }
 
@@ -54,7 +55,7 @@ namespace TTTBackend.Tests.Services.Integration
         {
             var registrationDTO = new UserRegistrationDTO
             {
-                Username = "integrationtest",
+                Username = "integrationtestuser",
                 Email = "integration@example.com",
                 Password = "password"
             };
@@ -62,26 +63,27 @@ namespace TTTBackend.Tests.Services.Integration
             var result = await _authService.RegisterUserAsync(registrationDTO);
 
             Assert.True(result.Success);
-            Assert.Equal(SuccessMessages.GetSuccessMessage(SuccessCode.Register), result.Data);
+            Assert.Equal(SuccessMessages.GetSuccessMessage(SuccessCode.Register), result.InternalMessage);
+            Assert.NotNull(result.Data);
+            Assert.Equal(registrationDTO.Username, result.Data.Username);
         }
 
         [Fact]
         public async Task ValidateUserAsync_ShouldReturnSuccess_WhenValidCredentialsAreProvided()
         {
-            // Arrange
-            var user = new User("testuser", "test@example.com", BCrypt.Net.BCrypt.HashPassword("password"));
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword("password");
+            var user = new User("testuser", "test@example.com", hashedPassword);
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
 
             var loginDTO = new UserLoginDTO { Username = "testuser", Password = "password" };
 
-            // Act
-            var (result, token) = await _authService.ValidateUserAsync(loginDTO);
+            var result = await _authService.ValidateUserAsync(loginDTO);
 
-            // Assert
             Assert.True(result.Success);
-            Assert.NotNull(token);
-            Assert.Equal(SuccessMessages.GetSuccessMessage(SuccessCode.Login), result.Data);
+            Assert.NotNull(result.Data);
+            Assert.NotNull(result.Data.Token);
+            Assert.Equal(SuccessMessages.GetSuccessMessage(SuccessCode.Login), result.InternalMessage);
         }
     }
 }

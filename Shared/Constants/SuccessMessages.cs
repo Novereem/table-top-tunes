@@ -11,8 +11,18 @@ namespace Shared.Constants
     {
         private static readonly Dictionary<SuccessCode, string> SuccessMessagesMap = new()
         {
+            //Authentication
             { SuccessCode.Register, "Successful Registration." },
             { SuccessCode.Login, "Successful Login." },
+
+            //Scenes
+            { SuccessCode.SceneCreated, "Succesful Scene Creation" },
+
+            //Audio
+            { SuccessCode.AudioCreated, "Succesful Audio Creation" },
+
+            //Common
+            { SuccessCode.Success, "Executed Successfully" },
         };
 
         public static string GetSuccessMessage(SuccessCode code)

@@ -5,23 +5,25 @@ using Shared.Interfaces.Data;
 using Shared.Interfaces.Services.CommonServices;
 using Shared.Models.Common;
 using Shared.Models.DTOs;
+using Shared.Factories;
 using Shared.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Shared.Interfaces.Services.Helpers;
 
 namespace TTTBackend.Services.Helpers
 {
-    public class AuthenticationServiceHelper
+    public class AuthenticationServiceHelper : IAuthenticationServiceHelper
     {
         private readonly IAuthenticationData _authData;
         private readonly IPasswordHashingService _passwordHashingService;
-        private readonly ILogger _logger;
+        private readonly ILogger<AuthenticationServiceHelper> _logger;
 
         public AuthenticationServiceHelper(
             IAuthenticationData authData,
             IPasswordHashingService passwordHashingService,
-            ILogger logger
+            ILogger<AuthenticationServiceHelper> logger
         )
         {
             _authData = authData;
@@ -29,21 +31,19 @@ namespace TTTBackend.Services.Helpers
             _logger = logger;
         }
 
-        public async Task<ServiceResult<User>> ValidateRegistrationAsync(UserRegistrationDTO registrationDTO)
+        public async Task<ServiceResult<object>> ValidateRegistrationAsync(UserRegistrationDTO registrationDTO)
         {
             if (await _authData.GetUserByUsernameAsync(registrationDTO.Username) != null)
             {
-                _logger.LogWarning("Registration failed: Username already taken. Username: {Username}", registrationDTO.Username);
-                return ServiceResult<User>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UsernameTaken), HttpStatusCode.Conflict);
+                return PredefinedFailures.GetFailure<object>(ErrorCode.UsernameTaken);
             }
 
             if (await _authData.GetUserByEmailAsync(registrationDTO.Email) != null)
             {
-                _logger.LogWarning("Registration failed: Email already registered. Email: {Email}", registrationDTO.Email);
-                return ServiceResult<User>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.EmailAlreadyRegistered), HttpStatusCode.Conflict);
+                return PredefinedFailures.GetFailure<object>(ErrorCode.EmailTaken);
             }
 
-            return ServiceResult<User>.SuccessResult();
+            return ServiceResult<object>.SuccessResult();
         }
 
         public async Task<ServiceResult<User>> ValidateLoginAsync(UserLoginDTO loginDTO)
@@ -51,19 +51,18 @@ namespace TTTBackend.Services.Helpers
             var user = await _authData.GetUserByUsernameAsync(loginDTO.Username);
             if (user == null || !_passwordHashingService.VerifyPassword(loginDTO.Password, user.PasswordHash))
             {
-                _logger.LogWarning("Login failed: Invalid credentials. Username: {Username}", loginDTO.Username);
-                return ServiceResult<User>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.InvalidCredentials), HttpStatusCode.Unauthorized);
+                return PredefinedFailures.GetFailure<User>(ErrorCode.InvalidCredentials);
             }
 
             return ServiceResult<User>.SuccessResult(user);
         }
 
-        public string GenerateJwtToken(Guid userGuid, string username)
+        public ServiceResult<string> GenerateJwtToken(Guid userGuid, string username)
         {
             var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
             if (string.IsNullOrEmpty(secretKey))
             {
-                throw new InvalidOperationException(ErrorMessages.GetErrorMessage(ErrorCode.JWTNullOrEmpty));
+                return PredefinedFailures.GetFailure<string>(ErrorCode.JWTNullOrEmpty);
             }
 
             var claims = new[]
@@ -84,7 +83,7 @@ namespace TTTBackend.Services.Helpers
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return ServiceResult<string>.SuccessResult(new JwtSecurityTokenHandler().WriteToken(token));
         }
     }
 }

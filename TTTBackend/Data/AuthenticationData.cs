@@ -29,5 +29,10 @@ namespace TTTBackend.Data
         {
             return await _dbContext.Users.SingleOrDefaultAsync(u => u.Email == email);
         }
+
+        public async Task<User?> GetUserByIdAsync(Guid userId)
+        {
+            return await _dbContext.Users.FindAsync(userId);
+        }
     }
 }

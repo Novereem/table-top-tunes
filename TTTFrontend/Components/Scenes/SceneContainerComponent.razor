@@ -31,7 +31,7 @@
 </div>
 
 @code {
-    private List<SceneListItemDTO> Scenes;
+    private List<SceneListItemDTO> Scenes = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,12 +40,13 @@
 
     private async Task RefreshSceneList()
     {
-        Scenes = await SceneService.GetScenesListAsync();
+        var scenes = await SceneService.GetScenesListAsync();
+        Scenes = scenes.Data!;
     }
 
     private async Task LoadSceneDetails(Guid sceneId)
     {
         var sceneDetails = await SceneService.GetSceneAsync(sceneId);
-        SelectedSceneService.SelectedScene = sceneDetails;
+        SelectedSceneService.SelectedScene = sceneDetails.Data!;
     }
 }

@@ -11,6 +11,7 @@ using TTTBackend.Services;
 using Shared.Interfaces.Data;
 using Serilog;
 using Shared.Interfaces.Services.CommonServices;
+using TTTBackend.Services.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,10 +34,12 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IAuthenticationData, AuthenticationData>();
 builder.Services.AddScoped<ISceneService, SceneService>();
 builder.Services.AddScoped<ISceneData, SceneData>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserData, UserData>();
 builder.Services.AddScoped<IAudioService, AudioService>();
 builder.Services.AddScoped<IAudioData, AudioData>();
+
+builder.Services.AddScoped<SceneServiceHelper>();
+builder.Services.AddScoped<AuthenticationServiceHelper>();
+builder.Services.AddScoped<AudioServiceHelper>();
 
 // CORS Policy
 builder.Services.AddCors(options =>

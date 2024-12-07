@@ -8,7 +8,6 @@ namespace Shared.Models.DTOs
 {
     public class RegisterResponseDTO
     {
-        public bool Success { get; set; }
-        public string ErrorMessage { get; set; }
+        public string Username { get; set; } = string.Empty;
     }
 }

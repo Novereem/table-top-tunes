@@ -31,5 +31,21 @@ namespace Shared.Models.Extensions
                 passwordHash: hashedPassword
             );
         }
+
+        public static LoginResponseDTO ToLoginResponseDTO(this string token)
+        {
+            return new LoginResponseDTO
+            {
+                Token = token
+            };
+        }
+
+        public static RegisterResponseDTO ToRegisterResponseDTO(this User user)
+        {
+            return new RegisterResponseDTO
+            {
+                Username = user.Username
+            };
+        }
     }
 }

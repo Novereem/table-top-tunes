@@ -15,13 +15,16 @@
         {
             <p class="text-danger mt-3">@errorMessage</p>
         }
-        
-        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+        @if (!string.IsNullOrEmpty(succcessMessage))
+        {
+            <p class="text-success mt-3">@succcessMessage</p>
+        }
+        <EditForm Model="@userLoginDTO" OnValidSubmit="@HandleLogin">
             <DataAnnotationsValidator />
 
             <div class="form-group mb-3">
                 <label for="username">Username:<span class="@(showUsernameError ? "text-danger" : "text-dark")">*</span></label>
-                <InputText id="username" class="@(showUsernameError ? "form-control border-danger" : "form-control")" @bind-Value="loginModel.Username" />
+                <InputText id="username" class="@(showUsernameError ? "form-control border-danger" : "form-control")" @bind-Value="userLoginDTO.Username" />
                 @if (showUsernameError)
                 {
                     <small class="text-danger">Username is required.</small>
@@ -29,7 +32,7 @@
             </div>
             <div class="form-group mb-3">
                 <label for="password">Password:<span class="@(showPasswordError ? "text-danger" : "text-dark")">*</span></label>
-                <InputText id="password" class="@(showPasswordError ? "form-control border-danger" : "form-control")" @bind-Value="loginModel.Password" type="password" />
+                <InputText id="password" class="@(showPasswordError ? "form-control border-danger" : "form-control")" @bind-Value="userLoginDTO.Password" type="password" />
                 @if (showPasswordError)
                 {
                     <small class="text-danger">Password is required.</small>
@@ -37,6 +40,10 @@
             </div>
 
             <button type="submit" class="btn btn-outline-dark w-100">Login</button>
+            @if (isLoading)
+            {
+                <p class="text-center text-secondary">Loading...</p>
+            }
         </EditForm>
     </div>
     <div class="d-flex">
@@ -45,46 +52,53 @@
 </div>
 
 @code {
-    private UserLoginDTO loginModel = new UserLoginDTO();
-    private string errorMessage;
+    private UserLoginDTO userLoginDTO = new UserLoginDTO();
+    private string errorMessage = string.Empty;
+    private string succcessMessage = string.Empty;
     private bool showUsernameAsterisk = false;
     private bool showPasswordAsterisk = false;
     private bool showUsernameError = false;
     private bool showPasswordError = false;
 
+    private bool isLoading = false;
+
     private async Task HandleLogin()
     {
-        // Reset error states before submission
         ResetErrorStates();
+        isLoading = true;
 
         // Validate fields before calling the backend
-        if (string.IsNullOrEmpty(loginModel.Username) || string.IsNullOrEmpty(loginModel.Password))
+        if (string.IsNullOrEmpty(userLoginDTO.Username) || string.IsNullOrEmpty(userLoginDTO.Password))
         {
-            if (string.IsNullOrEmpty(loginModel.Username))
+            if (string.IsNullOrEmpty(userLoginDTO.Username))
             {
                 showUsernameAsterisk = true;
                 showUsernameError = true;
+                isLoading = false;
             }
-            if (string.IsNullOrEmpty(loginModel.Password))
+            if (string.IsNullOrEmpty(userLoginDTO.Password))
             {
                 showPasswordAsterisk = true;
                 showPasswordError = true;
+                isLoading = false;
             }
             errorMessage = "Please fill in all required fields.";
             return;
         }
 
-        var response = await AuthService.Login(loginModel);
+        var response = await AuthService.LoginAsync(userLoginDTO);
         if (response.Success)
         {
-            LocalStorage.SetItem("authToken", response.Token);
-
+            succcessMessage = response.Message;
+            LocalStorage.SetItem("authToken", response.Data?.Token);
             NavigationManager.NavigateTo("/");
         }
         else
         {
-            errorMessage = response.ErrorMessage;
+            errorMessage = response.Message;
         }
+
+        isLoading = false;
     }
 
     private void ResetErrorStates()

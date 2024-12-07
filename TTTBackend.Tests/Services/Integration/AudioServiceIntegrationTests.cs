@@ -11,68 +11,88 @@ using System.Threading.Tasks;
 using TTTBackend.Data;
 using TTTBackend.Services.CommonServices;
 using TTTBackend.Services;
+using Shared.Interfaces.Data;
+using TTTBackend.Services.Helpers;
 
 namespace TTTBackend.Tests.Services.Integration
 {
     public class AudioServiceIntegrationTests
     {
-        private readonly AudioService _audioService;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IAudioData _audioData;
+        private readonly SceneServiceHelper _sceneHelper;
+        private readonly AudioServiceHelper _audioHelper;
+        private readonly AudioService _audioService;
+        private readonly User _testUser;
 
         public AudioServiceIntegrationTests()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "AudioServiceTestDB")
+                .UseInMemoryDatabase("AudioIntegrationTestDb")
                 .Options;
-
             _dbContext = new ApplicationDbContext(options);
-
-            var audioData = new AudioData(_dbContext);
+            _audioData = new AudioData(_dbContext);
             var sceneData = new SceneData(_dbContext);
-            var userData = new UserData(_dbContext);
 
-            var loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder.AddConsole();
-                builder.AddDebug();
-            });
+            _sceneHelper = new SceneServiceHelper(
+                sceneData,
+                LoggerFactory.Create(builder => { }).CreateLogger<SceneServiceHelper>()
+            );
+            _audioHelper = new AudioServiceHelper(
+                _audioData,
+                LoggerFactory.Create(builder => { }).CreateLogger<AudioServiceHelper>()
+            );
 
+            var authService = new AuthenticationService(
+                new AuthenticationData(_dbContext),
+                new PasswordHashingService(),
+                LoggerFactory.Create(builder => { }).CreateLogger<AuthenticationService>(),
+                new AuthenticationServiceHelper(
+                    new AuthenticationData(_dbContext),
+                    new PasswordHashingService(),
+                    LoggerFactory.Create(builder => { }).CreateLogger<AuthenticationServiceHelper>()
+                )
+            );
             var userClaimsService = new UserClaimsService();
-            var logger = loggerFactory.CreateLogger<AudioService>();
 
-            _audioService = new AudioService(audioData, userData, sceneData, userClaimsService, logger);
+            _audioService = new AudioService(
+                _audioData,
+                _sceneHelper,
+                authService,
+                userClaimsService,
+                LoggerFactory.Create(builder => { }).CreateLogger<AudioService>(),
+                _audioHelper
+            );
+
+            _testUser = new User("intUser", "int@example.com", BCrypt.Net.BCrypt.HashPassword("password"));
+            _dbContext.Users.Add(_testUser);
+            _dbContext.SaveChanges();
         }
 
         [Fact]
-        public async Task CreateAudioFileAsync_ShouldCreateAudioFileSuccessfully()
+        public async Task CreateAudioFileAsync_ShouldCreateSuccessfully()
         {
-            var user = new User("testuser", "test@example.com", "hashedpassword");
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
-
-            var claims = new List<Claim>
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-            };
-            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));
+            new Claim(ClaimTypes.NameIdentifier, _testUser.Id.ToString())
+            }));
 
-            var audioFileDTO = new AudioFileCreateDTO { Name = "Test Audio" };
-            var result = await _audioService.CreateAudioFileAsync(audioFileDTO, claimsPrincipal);
+            var dto = new AudioFileCreateDTO { Name = "Integration Audio" };
+            var result = await _audioService.CreateAudioFileAsync(dto, userPrincipal);
 
             Assert.True(result.Success);
-            Assert.Equal(audioFileDTO.Name, result.Data.Name);
+            Assert.Equal("Integration Audio", result.Data.Name);
         }
 
         [Fact]
         public async Task AssignAudioFileToSceneAsync_ShouldAssignSuccessfully()
         {
-            var user = new User("testuser", "test@example.com", "hashedpassword");
-            var scene = new Scene { Name = "Test Scene", User = user };
-            var audioFile = new AudioFile { Name = "Test Audio", User = user };
-
-            _dbContext.Users.Add(user);
+            var scene = new Scene { Name = "Integration Scene", User = _testUser };
             _dbContext.Scenes.Add(scene);
+
+            var audioFile = new AudioFile { Name = "Unassigned Audio", User = _testUser };
             _dbContext.AudioFiles.Add(audioFile);
+
             await _dbContext.SaveChangesAsync();
 
             var assignDTO = new AudioFileAssignDTO

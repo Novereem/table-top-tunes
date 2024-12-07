@@ -11,7 +11,8 @@ namespace Shared.Interfaces.Services
 {
     public interface IAuthenticationService
     {
-		public Task<ServiceResult<string>> RegisterUserAsync(UserRegistrationDTO registrationDTO);
-        public Task<(ServiceResult<string>, string? token)> ValidateUserAsync(UserLoginDTO loginDTO);
-	}
+		public Task<ServiceResult<RegisterResponseDTO>> RegisterUserAsync(UserRegistrationDTO registrationDTO);
+        public Task<ServiceResult<LoginResponseDTO>> ValidateUserAsync(UserLoginDTO loginDTO);
+        Task<ServiceResult<User>> GetUserByIdAsync(Guid userId);
+    }
 }

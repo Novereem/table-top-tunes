@@ -11,60 +11,70 @@ using Shared.Models.Common;
 using Shared.Interfaces.Services.CommonServices;
 using System.Security.Claims;
 using TTTBackend.Services.Helpers;
+using Shared.Factories;
+using Shared.Interfaces.Services.Helpers;
 
 namespace TTTBackend.Services
 {
     public class AudioService : IAudioService
     {
         private readonly IAudioData _audioData;
-        private readonly IUserData _userData;
-        private readonly ISceneData _sceneData;
+        private readonly ISceneServiceHelper _sceneServiceHelper;
+        private readonly IAuthenticationService _authenticationService;
         private readonly IUserClaimsService _userClaimsService;
         private readonly ILogger<AudioService> _logger;
-        private readonly AudioServiceHelper _helper;
+        private readonly IAudioServiceHelper _helper;
 
-        public AudioService(IAudioData audioData, IUserData userData, ISceneData sceneData, IUserClaimsService userClaimsService, ILogger<AudioService> logger)
+        public AudioService(
+            IAudioData audioData,
+            ISceneServiceHelper sceneServiceHelper,
+            IAuthenticationService authenticationService,
+            IUserClaimsService userClaimsService,
+            ILogger<AudioService> logger,
+            IAudioServiceHelper audioServiceHelper)
         {
             _audioData = audioData;
-            _userData = userData;
-            _sceneData = sceneData;
+            _sceneServiceHelper = sceneServiceHelper;
+            _authenticationService = authenticationService;
             _userClaimsService = userClaimsService;
             _logger = logger;
-            _helper = new AudioServiceHelper(audioData, userData, sceneData, logger);
+            _helper = audioServiceHelper;
         }
-
         public async Task<ServiceResult<AudioFileResponseDTO>> CreateAudioFileAsync(AudioFileCreateDTO audioFileCreateDTO, ClaimsPrincipal user)
         {
             var userIdResult = _userClaimsService.GetUserIdFromClaims(user);
             if (!userIdResult.Success)
             {
-                _logger.LogWarning("Failed to retrieve user ID. Error: {ErrorMessage}", userIdResult.ErrorMessage);
-                return ServiceResult<AudioFileResponseDTO>.Failure(userIdResult.ErrorMessage, userIdResult.HttpStatusCode);
+                return userIdResult.ToFailureResult<AudioFileResponseDTO>();
             }
 
             var validationResult = _helper.ValidateAudioFileCreateRequest(audioFileCreateDTO);
             if (!validationResult.Success)
             {
-                return ServiceResult<AudioFileResponseDTO>.Failure(validationResult.ErrorMessage, HttpStatusCode.BadRequest);
+                return validationResult.ToFailureResult<AudioFileResponseDTO>();
             }
 
             try
             {
-                var retrievedUser = await _helper.RetrieveUserByIdAsync(userIdResult.Data);
+                var retrievedUser = await _authenticationService.GetUserByIdAsync(userIdResult.Data);
                 if (!retrievedUser.Success)
                 {
-                    return ServiceResult<AudioFileResponseDTO>.Failure(retrievedUser.ErrorMessage, HttpStatusCode.NotFound);
+                    return retrievedUser.ToFailureResult<AudioFileResponseDTO>();
                 }
 
                 var newAudioFile = audioFileCreateDTO.ToAudioFileFromCreateDTO(retrievedUser.Data!);
                 await _audioData.SaveAudioFileAsync(newAudioFile);
 
-                return ServiceResult<AudioFileResponseDTO>.SuccessResult(newAudioFile.ToAudioFileResponseDTO(), HttpStatusCode.Created);
+                return ServiceResult<AudioFileResponseDTO>.SuccessResult(
+                    newAudioFile.ToAudioFileResponseDTO(),
+                    SuccessMessages.GetSuccessMessage(SuccessCode.Success),
+                    SuccessMessagesUser.GetSuccessMessage(SuccessCodeUser.AudioCreated),
+                    httpStatusCode: HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error while creating audio file. Name: {Name}", audioFileCreateDTO.Name);
-                return ServiceResult<AudioFileResponseDTO>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError), HttpStatusCode.InternalServerError);
+                return PredefinedFailures.GetFailure<AudioFileResponseDTO>(ErrorCode.InternalServerError);
             }
         }
 
@@ -73,32 +83,34 @@ namespace TTTBackend.Services
             var validationResult = _helper.ValidateAudioFileAssignRequest(assignDTO);
             if (!validationResult.Success)
             {
-                return ServiceResult<AudioFileResponseDTO>.Failure(validationResult.ErrorMessage, HttpStatusCode.BadRequest);
+                return validationResult.ToFailureResult<AudioFileResponseDTO>();
             }
-
             try
             {
                 var audioFileResult = await _helper.RetrieveAudioFileByIdAsync(assignDTO.AudioFileId);
                 if (!audioFileResult.Success)
                 {
-                    return ServiceResult<AudioFileResponseDTO>.Failure(audioFileResult.ErrorMessage, HttpStatusCode.NotFound);
+                    return audioFileResult.ToFailureResult<AudioFileResponseDTO>();
                 }
 
-                var sceneResult = await _helper.RetrieveSceneByIdAsync(assignDTO.SceneId);
+                var sceneResult = await _sceneServiceHelper.RetrieveSceneByIdAsync(assignDTO.SceneId);
                 if (!sceneResult.Success)
                 {
-                    return ServiceResult<AudioFileResponseDTO>.Failure(sceneResult.ErrorMessage, HttpStatusCode.NotFound);
+                    return sceneResult.ToFailureResult<AudioFileResponseDTO>();
                 }
 
                 var updatedAudioFile = assignDTO.ToAudioFileFromAssignDTO(audioFileResult.Data!, sceneResult.Data!);
                 await _audioData.UpdateAudioFileAsync(updatedAudioFile);
 
-                return ServiceResult<AudioFileResponseDTO>.SuccessResult(updatedAudioFile.ToAudioFileResponseDTO(), HttpStatusCode.OK);
+                return ServiceResult<AudioFileResponseDTO>.SuccessResult(
+                    updatedAudioFile.ToAudioFileResponseDTO(),
+                    SuccessMessages.GetSuccessMessage(SuccessCode.Success),
+                    httpStatusCode: HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error while assigning audio file to scene. AudioFileId: {AudioFileId}, SceneId: {SceneId}", assignDTO.AudioFileId, assignDTO.SceneId);
-                return ServiceResult<AudioFileResponseDTO>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError), HttpStatusCode.InternalServerError);
+                return PredefinedFailures.GetFailure<AudioFileResponseDTO>(ErrorCode.InternalServerError);
             }
         }
     }

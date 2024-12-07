@@ -12,24 +12,32 @@ using Shared.Interfaces.Services.CommonServices;
 using TTTBackend.Services.CommonServices;
 using Shared.Constants;
 using TTTBackend.Services.Helpers;
+using System.ComponentModel.DataAnnotations;
+using Shared.Factories;
+using Shared.Interfaces.Services.Helpers;
 
 namespace TTTBackend.Services
 {
     public class SceneService : ISceneService
     {
         private readonly ISceneData _sceneData;
-        private readonly IUserService _userService;
+        private readonly IAuthenticationService _authenticationService;
         private readonly IUserClaimsService _userClaimsService;
         private readonly ILogger<SceneService> _logger;
-        private readonly SceneServiceHelper _helper;
+        private readonly ISceneServiceHelper _helper;
 
-        public SceneService(ISceneData sceneData, IUserService userService, IUserClaimsService userClaimsService, ILogger<SceneService> logger)
+        public SceneService(
+            ISceneData sceneData,
+            IAuthenticationService authenticationService,
+            IUserClaimsService userClaimsService,
+            ILogger<SceneService> logger,
+            ISceneServiceHelper sceneServiceHelper)
         {
             _sceneData = sceneData;
-            _userService = userService;
+            _authenticationService = authenticationService;
             _userClaimsService = userClaimsService;
             _logger = logger;
-            _helper = new SceneServiceHelper(sceneData, logger);
+            _helper = sceneServiceHelper;
         }
 
         public async Task<ServiceResult<SceneCreateResponseDTO>> CreateSceneAsync(SceneCreateDTO sceneDTO, ClaimsPrincipal user)
@@ -37,35 +45,39 @@ namespace TTTBackend.Services
             var userIdResult = _userClaimsService.GetUserIdFromClaims(user);
             if (!userIdResult.Success)
             {
-                return ServiceResult<SceneCreateResponseDTO>.Failure(userIdResult.ErrorMessage, userIdResult.HttpStatusCode);
+                return userIdResult.ToFailureResult<SceneCreateResponseDTO>();
             }
 
             try
             {
-                var userResult = await _userService.GetUserByIdAsync(userIdResult.Data);
+                var userResult = await _authenticationService.GetUserByIdAsync(userIdResult.Data);
                 if (!userResult.Success || userResult.Data == null)
                 {
-                    return ServiceResult<SceneCreateResponseDTO>.Failure(userResult.ErrorMessage, userResult.HttpStatusCode);
+                    return userIdResult.ToFailureResult<SceneCreateResponseDTO>();
                 }
 
                 var validationResult = _helper.ValidateSceneCreateRequest(sceneDTO);
                 if (!validationResult.Success)
                 {
-                    return ServiceResult<SceneCreateResponseDTO>.Failure(validationResult.ErrorMessage, HttpStatusCode.BadRequest);
+                    return userIdResult.ToFailureResult<SceneCreateResponseDTO>();
                 }
 
                 var createdSceneResult = await _helper.CreateSceneAsync(sceneDTO, userResult.Data);
                 if (!createdSceneResult.Success)
                 {
-                    return ServiceResult<SceneCreateResponseDTO>.Failure(createdSceneResult.ErrorMessage, createdSceneResult.HttpStatusCode);
+                    return userIdResult.ToFailureResult<SceneCreateResponseDTO>();
                 }
 
-                return ServiceResult<SceneCreateResponseDTO>.SuccessResult(createdSceneResult.Data, HttpStatusCode.Created);
+                return ServiceResult<SceneCreateResponseDTO>.SuccessResult(
+                    createdSceneResult.Data,
+                    SuccessMessages.GetSuccessMessage(SuccessCode.SceneCreated),
+                    SuccessMessagesUser.GetSuccessMessage(SuccessCodeUser.SceneCreated),
+                    HttpStatusCode.Created);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An unexpected error occurred while creating the scene. Name: {Name}", sceneDTO.Name);
-                return ServiceResult<SceneCreateResponseDTO>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError), HttpStatusCode.InternalServerError);
+                return PredefinedFailures.GetFailure<SceneCreateResponseDTO>(ErrorCode.InternalServerError);
             }
         }
 
@@ -76,15 +88,18 @@ namespace TTTBackend.Services
                 var sceneResult = await _helper.RetrieveSceneByIdAsync(id);
                 if (!sceneResult.Success)
                 {
-                    return ServiceResult<SceneGetResponseDTO>.Failure(sceneResult.ErrorMessage, sceneResult.HttpStatusCode);
+                    sceneResult.ToFailureResult<SceneGetResponseDTO>();
                 }
 
-                return ServiceResult<SceneGetResponseDTO>.SuccessResult(sceneResult.Data.ToSceneGetResponseDTO());
+                return ServiceResult<SceneGetResponseDTO>.SuccessResult(
+                    sceneResult.Data.ToSceneGetResponseDTO(),
+                    SuccessMessages.GetSuccessMessage(SuccessCode.Success),
+                    httpStatusCode: HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An unexpected error occurred while retrieving the scene. Scene ID: {SceneId}", id);
-                return ServiceResult<SceneGetResponseDTO>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError), HttpStatusCode.InternalServerError);
+                return PredefinedFailures.GetFailure<SceneGetResponseDTO>(ErrorCode.InternalServerError);
             }
         }
 
@@ -93,7 +108,7 @@ namespace TTTBackend.Services
             var userIdResult = _userClaimsService.GetUserIdFromClaims(user);
             if (!userIdResult.Success)
             {
-                return ServiceResult<List<SceneListItemDTO>>.Failure(userIdResult.ErrorMessage, userIdResult.HttpStatusCode);
+                return userIdResult.ToFailureResult<List<SceneListItemDTO>>();
             }
 
             try
@@ -101,7 +116,7 @@ namespace TTTBackend.Services
                 var scenesResult = await _helper.RetrieveScenesByUserIdAsync(userIdResult.Data);
                 if (!scenesResult.Success)
                 {
-                    return ServiceResult<List<SceneListItemDTO>>.Failure(scenesResult.ErrorMessage);
+                    return userIdResult.ToFailureResult<List<SceneListItemDTO>>();
                 }
 
                 var sceneListItems = scenesResult.Data!.Select(scene => scene.ToSceneListItemDTO()).ToList();
@@ -111,9 +126,8 @@ namespace TTTBackend.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An unexpected error occurred while retrieving scenes for user: {UserId}", userIdResult.Data);
-                return ServiceResult<List<SceneListItemDTO>>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError), HttpStatusCode.InternalServerError);
+                return PredefinedFailures.GetFailure<List<SceneListItemDTO>>(ErrorCode.InternalServerError);
             }
         }
     }
-
 }

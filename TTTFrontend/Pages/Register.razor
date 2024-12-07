@@ -16,7 +16,7 @@
             <p class="text-danger mt-3">@errorMessage</p>
         }
 
-        <EditForm Model="@registerModel" OnValidSubmit="@HandleRegister">
+        <EditForm Model="@registerModel" OnValidSubmit="@HandleRegister" novalidate>
             <DataAnnotationsValidator />
 
             <div class="form-group mb-3">
@@ -56,25 +56,30 @@
             </div>
 
             <button type="submit" class="btn btn-outline-dark w-100">Register</button>
+            @if (isLoading)
+            {
+                <p class="text-center text-secondary">Loading...</p>
+            }
         </EditForm>
     </div>
 </div>
 
 @code {
     private UserRegistrationDTO registerModel = new UserRegistrationDTO();
-    private string confirmPassword;
-    private string errorMessage;
+    private string confirmPassword = string.Empty;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
     private bool showUsernameError = false;
     private bool showEmailError = false;
     private bool showPasswordError = false;
     private bool showConfirmPasswordError = false;
+    private bool isLoading = false;
 
     private async Task HandleRegister()
     {
-        // Reset error states before submission
         ResetErrorStates();
+        isLoading = true;
 
-        // Validate fields before calling the backend
         bool isValid = true;
 
         if (string.IsNullOrEmpty(registerModel.Username))
@@ -122,15 +127,18 @@
             return;
         }
 
-        var response = await AuthService.Register(registerModel);
+        var response = await AuthService.RegisterAsync(registerModel);
         if (response.Success)
         {
+            successMessage = response.Message;
             NavigationManager.NavigateTo("/login");
         }
         else
         {
-            errorMessage = response.ErrorMessage;
+            errorMessage = response.Message;
         }
+
+        isLoading = false;
     }
 
     private void ResetErrorStates()

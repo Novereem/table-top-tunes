@@ -1,6 +1,8 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Shared.Factories;
+using Shared.Models.Common;
 using Shared.Models.DTOs;
 using System.Net.Http.Json;
 
@@ -14,7 +16,11 @@ namespace TTTFrontend.Services
         private readonly CustomAuthenticationStateProvider _authenticationStateProvider;
         private readonly string _baseUrl;
 
-        public AuthenticationService(HttpClient httpClient, ISyncLocalStorageService localStorage, NavigationManager navigationManager, AuthenticationStateProvider authenticationStateProvider, IConfiguration configuration)
+        public AuthenticationService(HttpClient httpClient, 
+            ISyncLocalStorageService localStorage, 
+            NavigationManager navigationManager, 
+            AuthenticationStateProvider authenticationStateProvider, 
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
             _localStorage = localStorage;
@@ -24,59 +30,46 @@ namespace TTTFrontend.Services
             _baseUrl = configuration["ApiSettings:BaseUrl"] ?? throw new InvalidOperationException("API Base URL is not configured.");
         }
 
-        public async Task<LoginResponseDTO> Login(UserLoginDTO loginModel)
+        public async Task<ApiResponse<LoginResponseDTO>> LoginAsync(UserLoginDTO loginModel)
         {
-            var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/Authentication/login", loginModel);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var responseData = await response.Content.ReadFromJsonAsync<LoginResponseDTO>();
-                if (responseData != null && !string.IsNullOrEmpty(responseData.Token))
+                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/Authentication/login", loginModel);
+                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponseDTO>>();
+
+                if (apiResponse != null && apiResponse.Success && apiResponse.Data != null)
                 {
-                    _localStorage.SetItem("authToken", responseData.Token);
-                    _authenticationStateProvider.MarkUserAsAuthenticated(responseData.Token);
-                    return new LoginResponseDTO
-                    {
-                        Success = true,
-                        Token = responseData.Token
-                    };
+                    var token = apiResponse.Data.Token;
+                    _localStorage.SetItem("authToken", token);
+                    _authenticationStateProvider.MarkUserAsAuthenticated(token);
                 }
+
+                return apiResponse ?? ApiResponseFactory.CreateFallbackResponse<LoginResponseDTO>();
             }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-            var errorMessage = errorResponse != null && errorResponse.ContainsKey("message")
-                ? errorResponse["message"]
-                : "An unknown error occurred.";
-
-            return new LoginResponseDTO
+            catch
             {
-                Success = false,
-                ErrorMessage = errorMessage
-            };
+                return ApiResponseFactory.CreateErrorResponse<LoginResponseDTO>("An error occured when logging in, please try again later.");
+            }
         }
 
-        public async Task<RegisterResponseDTO> Register(UserRegistrationDTO registerModel)
+        public async Task<ApiResponse<object>> RegisterAsync(UserRegistrationDTO registerModel)
         {
-            var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/Authentication/register", registerModel);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return new RegisterResponseDTO
+                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/Authentication/register", registerModel);
+                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+
+                if (apiResponse != null && apiResponse.Success)
                 {
-                    Success = true
-                };
+                    return apiResponse;
+                }
+
+                return ApiResponseFactory.CreateFallbackResponse<object>();
             }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-            var errorMessage = errorResponse != null && errorResponse.ContainsKey("Message")
-                ? errorResponse["Message"]
-                : "An unknown error occurred.";
-
-            return new RegisterResponseDTO
+            catch
             {
-                Success = false,
-                ErrorMessage = errorMessage
-            };
+                return ApiResponseFactory.CreateErrorResponse<object>("An error occured when registering, please try again later.");
+            }
         }
 
         public void Logout()
@@ -84,11 +77,6 @@ namespace TTTFrontend.Services
             _localStorage.RemoveItem("authToken");
             _authenticationStateProvider.MarkUserAsLoggedOut();
             _navigationManager.NavigateTo("/login");
-        }
-
-        public string GetToken()
-        {
-            return _localStorage.GetItem<string>("authToken");
         }
     }
 }

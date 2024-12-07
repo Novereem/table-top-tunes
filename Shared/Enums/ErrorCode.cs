@@ -8,19 +8,31 @@ namespace Shared.Enums
 {
     public enum ErrorCode
     {
+        //Authentication
         InvalidCredentials,
         UsernameTaken,
-        EmailAlreadyRegistered,
-        UnauthorizedAccess,
-        InvalidInput,
-        ResourceNotFound,
-        Database,
+        EmailTaken,
         JWTNullOrEmpty,
         MissingToken,
         UnauthorizedToken,
         UserNotFound,
+
+        //Audio & Scene
+        InvalidInput,
+
+        //Audio
         AudioFileNotFound,
+
+        //Scene
         SceneNotFound,
-        UnknownError
+
+        //Common
+        ResourceNotFound,
+        UnauthorizedAccess,
+        Database,
+        UnknownError,
+        InternalServerError,
+
+        CreationFailed
     }
 }

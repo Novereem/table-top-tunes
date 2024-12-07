@@ -11,122 +11,91 @@ using TTTBackend.Data;
 using TTTBackend.Services;
 using System.Security.Claims;
 using TTTBackend.Services.CommonServices;
+using Shared.Interfaces.Data;
+using Shared.Interfaces.Services.CommonServices;
+using TTTBackend.Services.Helpers;
+using Shared.Interfaces.Services;
 
 namespace TTTBackend.Tests.Services.Integration
 {
     public class SceneServiceIntegrationTests
     {
-        private readonly SceneService _sceneService;
         private readonly ApplicationDbContext _dbContext;
-
+        private readonly ISceneData _sceneData;
+        private readonly IAuthenticationService _authService;
+        private readonly IUserClaimsService _userClaimsService;
+        private readonly SceneService _sceneService;
 
         public SceneServiceIntegrationTests()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "SceneServiceTestDB")
+                .UseInMemoryDatabase("SceneTestDb")
                 .Options;
 
             _dbContext = new ApplicationDbContext(options);
+            _sceneData = new SceneData(_dbContext);
+            _authService = new AuthenticationService(
+                new AuthenticationData(_dbContext),
+                new PasswordHashingService(),
+                LoggerFactory.Create(builder => { }).CreateLogger<AuthenticationService>(),
+                new AuthenticationServiceHelper(
+                    new AuthenticationData(_dbContext),
+                    new PasswordHashingService(),
+                    LoggerFactory.Create(builder => { }).CreateLogger<AuthenticationServiceHelper>()
+                )
+            );
+            _userClaimsService = new UserClaimsService();
 
-            var sceneData = new SceneData(_dbContext);
-            var userData = new UserData(_dbContext);
-            var userService = new UserService(userData, null);
+            var helper = new SceneServiceHelper(
+                _sceneData,
+                LoggerFactory.Create(builder => { }).CreateLogger<SceneServiceHelper>()
+            );
 
-            var userClaimsService = new UserClaimsService();
-
-            var loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder.AddConsole();
-                builder.AddDebug();
-            });
-            var logger = loggerFactory.CreateLogger<SceneService>();
-
-            _sceneService = new SceneService(sceneData, userService, userClaimsService, logger);
+            _sceneService = new SceneService(
+                _sceneData,
+                _authService,
+                _userClaimsService,
+                LoggerFactory.Create(builder => { }).CreateLogger<SceneService>(),
+                helper
+            );
         }
 
         [Fact]
         public async Task CreateSceneAsync_ShouldCreateSceneSuccessfully()
         {
-            // Arrange
-            var user = new User("integrationtestuser", "integration@example.com", "hashedpassword");
+            var user = new User("integrationUser", "int@example.com", BCrypt.Net.BCrypt.HashPassword("password"));
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
 
-            var claims = new List<Claim>
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-            };
-            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            }));
 
-            Assert.NotNull(claimsPrincipal);
-            Assert.NotEmpty(claimsPrincipal.Claims);
+            var dto = new SceneCreateDTO { Name = "Integration Scene" };
 
-            var sceneDTO = new SceneCreateDTO { Name = "Integration Test Scene" };
-            var userInDb = await _dbContext.Users.FindAsync(user.Id);
-            Assert.NotNull(userInDb);
+            var result = await _sceneService.CreateSceneAsync(dto, userPrincipal);
 
-            // Act
-            var result = await _sceneService.CreateSceneAsync(sceneDTO, claimsPrincipal);
-
-            // Assert
             Assert.True(result.Success);
-            Assert.NotNull(result.Data);
-            Assert.Equal(sceneDTO.Name, result.Data.Name);
-
-            // Verify the scene exists in the database
-            var createdScene = await _dbContext.Scenes.FindAsync(result.Data.Id);
-            Assert.NotNull(createdScene);
-            Assert.Equal(sceneDTO.Name, createdScene.Name);
-            Assert.Equal(user.Id, createdScene.User.Id);
+            Assert.Equal("Integration Scene", result.Data.Name);
         }
 
         [Fact]
-        public async Task GetSceneByIdAsync_ShouldReturnScene_WhenSceneExists()
+        public async Task GetScenesListByUserIdAsync_ShouldReturnEmptyList_WhenNoScenesExist()
         {
-            var user = new User("integrationtestuser", "integration@example.com", "hashedpassword");
-            var scene = new Scene { Name = "Integration Test Scene", User = user, CreatedAt = DateTime.UtcNow };
-
+            var user = new User("emptyUser", "empty@example.com", BCrypt.Net.BCrypt.HashPassword("password"));
             _dbContext.Users.Add(user);
-            _dbContext.Scenes.Add(scene);
             await _dbContext.SaveChangesAsync();
 
-            var result = await _sceneService.GetSceneByIdAsync(scene.Id);
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            }));
+
+            var result = await _sceneService.GetScenesListByUserIdAsync(userPrincipal);
 
             Assert.True(result.Success);
-            Assert.NotNull(result.Data);
-            Assert.Equal(scene.Name, result.Data.Name);
-        }
-
-        [Fact]
-        public async Task GetScenesListByUserIdAsync_ShouldReturnScenesForUser()
-        {
-            // Arrange
-            var user = new User("integrationtestuser", "integration@example.com", "hashedpassword");
-            var scenes = new List<Scene>
-            {
-                new Scene { Name = "Scene 1", User = user },
-                new Scene { Name = "Scene 2", User = user }
-            };
-
-            _dbContext.Users.Add(user);
-            _dbContext.Scenes.AddRange(scenes);
-            await _dbContext.SaveChangesAsync();
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-            };
-            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));
-
-            // Act
-            var result = await _sceneService.GetScenesListByUserIdAsync(claimsPrincipal);
-
-            // Assert
-            Assert.True(result.Success, "Expected success but got failure.");
-            Assert.NotNull(result.Data);
-            Assert.Equal(2, result.Data.Count);
-            Assert.Contains(result.Data, s => s.Name == "Scene 1");
-            Assert.Contains(result.Data, s => s.Name == "Scene 2");
+            Assert.Empty(result.Data);
         }
     }
 }

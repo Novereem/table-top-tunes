@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Shared.Enums;
 using Shared.Interfaces.Services;
+using Shared.Models.Common.Extensions;
 using Shared.Models.DTOs;
 using System.Security.Claims;
 
@@ -22,27 +23,23 @@ namespace TTTBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAudioFile([FromBody] AudioFileCreateDTO audioFileCreateDTO)
         {
-            var result = await _audioService.CreateAudioFileAsync(audioFileCreateDTO, User);
+            var serviceResult = await _audioService.CreateAudioFileAsync(audioFileCreateDTO, User);
 
-            if (!result.Success)
-            {
-                return StatusCode((int)(result.HttpStatusCode ?? HttpStatusCode.BadRequest), new { Message = result.ErrorMessage });
-            }
-
-            return StatusCode((int)(result.HttpStatusCode ?? HttpStatusCode.Created), result.Data);
+            return StatusCode(
+                (int)(serviceResult.HttpStatusCode ?? HttpStatusCode.OK),
+                serviceResult.ToApiResponse()
+            );
+                
         }
 
         [HttpPut("assign")]
         public async Task<IActionResult> AssignAudioFileToScene([FromBody] AudioFileAssignDTO assignDTO)
         {
-            var result = await _audioService.AssignAudioFileToSceneAsync(assignDTO);
-
-            if (!result.Success)
-            {
-                return StatusCode((int)(result.HttpStatusCode ?? HttpStatusCode.BadRequest), new { Message = result.ErrorMessage });
-            }
-
-            return Ok(result.Data);
+            var serviceResult = await _audioService.AssignAudioFileToSceneAsync(assignDTO);
+            return StatusCode(
+                (int)(serviceResult.HttpStatusCode ?? HttpStatusCode.OK),
+                serviceResult.ToApiResponse()
+            );
         }
     }
 }

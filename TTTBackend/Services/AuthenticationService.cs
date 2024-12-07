@@ -1,19 +1,16 @@
 ﻿using Shared.Models.DTOs;
-using Shared.Models;
-using TTTBackend.Data;
-using TTTBackend.Services.CommonServices;
-using Shared.Interfaces.Services;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Shared.Interfaces.Data;
 using Shared.Models.Extensions;
+using Shared.Models.Common.Extensions;
+using Shared.Interfaces.Services;
+using Shared.Interfaces.Data;
 using Shared.Constants;
 using Shared.Enums;
 using Shared.Models.Common;
 using Shared.Interfaces.Services.CommonServices;
 using TTTBackend.Services.Helpers;
+using Shared.Factories;
+using Shared.Models;
+using Shared.Interfaces.Services.Helpers;
 
 namespace TTTBackend.Services
 {
@@ -22,26 +19,27 @@ namespace TTTBackend.Services
         private readonly IAuthenticationData _authData;
         private readonly IPasswordHashingService _passwordHashingService;
         private readonly ILogger<AuthenticationService> _logger;
-        private readonly AuthenticationServiceHelper _helper;
+        private readonly IAuthenticationServiceHelper _helper;
 
         public AuthenticationService(
             IAuthenticationData authData,
             IPasswordHashingService passwordHashingService,
-            ILogger<AuthenticationService> logger
+            ILogger<AuthenticationService> logger,
+            IAuthenticationServiceHelper authenticationServiceHelper
         )
         {
             _authData = authData;
             _passwordHashingService = passwordHashingService;
             _logger = logger;
-            _helper = new AuthenticationServiceHelper(authData, passwordHashingService, logger);
+            _helper = authenticationServiceHelper;
         }
 
-        public async Task<ServiceResult<string>> RegisterUserAsync(UserRegistrationDTO registrationDTO)
+        public async Task<ServiceResult<RegisterResponseDTO>> RegisterUserAsync(UserRegistrationDTO registrationDTO)
         {
             var validationResult = await _helper.ValidateRegistrationAsync(registrationDTO);
             if (!validationResult.Success)
             {
-                return ServiceResult<string>.Failure(validationResult.ErrorMessage, validationResult.HttpStatusCode);
+                return validationResult.ToFailureResult<RegisterResponseDTO>();
             }
 
             try
@@ -49,45 +47,68 @@ namespace TTTBackend.Services
                 var newUser = registrationDTO.ToUserFromRegistrationDTO(_passwordHashingService);
                 await _authData.RegisterUserAsync(newUser);
 
-                return ServiceResult<string>.SuccessResult(
+                return ServiceResult<RegisterResponseDTO>.SuccessResult(
+                    newUser.ToRegisterResponseDTO(),
                     SuccessMessages.GetSuccessMessage(SuccessCode.Register),
-                    HttpStatusCode.Created
-                );
+                    SuccessMessagesUser.GetSuccessMessage(SuccessCodeUser.Register),
+                    HttpStatusCode.Created);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error while registering user. Username: {Username}, Email: {Email}", registrationDTO.Username, registrationDTO.Email);
-                return ServiceResult<string>.Failure(
-                    ErrorMessages.GetErrorMessage(ErrorCode.UnknownError),
-                    HttpStatusCode.InternalServerError
-                );
+                return PredefinedFailures.GetFailure<RegisterResponseDTO>(ErrorCode.InternalServerError);
             }
         }
 
-        public async Task<(ServiceResult<string>, string? token)> ValidateUserAsync(UserLoginDTO loginDTO)
+        public async Task<ServiceResult<LoginResponseDTO>> ValidateUserAsync(UserLoginDTO loginDTO)
         {
             var validationResult = await _helper.ValidateLoginAsync(loginDTO);
             if (!validationResult.Success)
             {
-                return (ServiceResult<string>.Failure(validationResult.ErrorMessage, validationResult.HttpStatusCode), null);
+                return validationResult.ToFailureResult<LoginResponseDTO>();
             }
 
             try
             {
                 var user = validationResult.Data;
-                var token = _helper.GenerateJwtToken(user.Id, user.Username);
-                return (
-                    ServiceResult<string>.SuccessResult(
-                        SuccessMessages.GetSuccessMessage(SuccessCode.Login),
-                        HttpStatusCode.OK
-                    ),
-                    token
-                );
+                var getToken = _helper.GenerateJwtToken(user!.Id, user.Username);
+                if (!getToken.Success)
+                {
+                    return validationResult.ToFailureResult<LoginResponseDTO>();
+                }
+                return ServiceResult<LoginResponseDTO>.SuccessResult(
+                    getToken.Data!.ToLoginResponseDTO(),
+                    SuccessMessages.GetSuccessMessage(SuccessCode.Login),
+                    SuccessMessagesUser.GetSuccessMessage(SuccessCodeUser.Login),
+                    HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error while validating user. Username: {Username}", loginDTO.Username);
-                return (ServiceResult<string>.Failure(ErrorMessages.GetErrorMessage(ErrorCode.UnknownError),HttpStatusCode.InternalServerError), null);
+                return PredefinedFailures.GetFailure<LoginResponseDTO>(ErrorCode.InternalServerError);
+            }
+        }
+
+        public async Task<ServiceResult<User>> GetUserByIdAsync(Guid userId)
+        {
+            try
+            {
+                var user = await _authData.GetUserByIdAsync(userId);
+
+                if (user == null)
+                {
+                    return PredefinedFailures.GetFailure<User>(ErrorCode.ResourceNotFound);
+                }
+
+                return ServiceResult<User>.SuccessResult(
+                    user,
+                    SuccessMessages.GetSuccessMessage(SuccessCode.Success),
+                    httpStatusCode: HttpStatusCode.OK);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while getting user. Guid: {userId}", userId);
+                return PredefinedFailures.GetFailure<User>(ErrorCode.InternalServerError);
             }
         }
     }

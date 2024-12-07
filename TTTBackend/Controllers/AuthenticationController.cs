@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Shared.Enums;
 using Shared.Interfaces.Services;
 using Shared.Models.DTOs;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Shared.Models.Common.Extensions;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -21,38 +18,20 @@ public class AuthenticationController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegistrationDTO registrationDTO)
     {
-        var result = await _authService.RegisterUserAsync(registrationDTO);
-
-        if (!result.Success)
-        {
-            return StatusCode(
-                (int)(result.HttpStatusCode ?? HttpStatusCode.BadRequest),
-                new { Message = result.ErrorMessage }
-            );
-        }
-
+        var serviceResult = await _authService.RegisterUserAsync(registrationDTO);
         return StatusCode(
-            (int)(result.HttpStatusCode ?? HttpStatusCode.Created),
-            new { Message = result.Data }
+            (int)(serviceResult.HttpStatusCode ?? HttpStatusCode.OK),
+            serviceResult.ToApiResponse()
         );
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] UserLoginDTO loginModel)
+    public async Task<IActionResult> Login([FromBody] UserLoginDTO loginDTO)
     {
-        var (result, token) = await _authService.ValidateUserAsync(loginModel);
-
-        if (!result.Success)
-        {
-            return StatusCode(
-                (int)(result.HttpStatusCode ?? HttpStatusCode.Unauthorized),
-                new { Message = result.ErrorMessage }
-            );
-        }
-
+        var serviceResult = await _authService.ValidateUserAsync(loginDTO);
         return StatusCode(
-            (int)(result.HttpStatusCode ?? HttpStatusCode.OK),
-            new { Token = token }
+            (int)(serviceResult.HttpStatusCode ?? HttpStatusCode.OK),
+            serviceResult.ToApiResponse()
         );
     }
 }
