@@ -11,6 +11,7 @@ namespace Shared.Interfaces.Data
     {
         Task SaveAudioFileAsync(AudioFile audioFile);
         Task<AudioFile> GetAudioFileByIdAsync(Guid audioFileId);
+        Task<List<AudioFile>> GetAudioFilesByUserIdAsync(Guid userId);
         Task UpdateAudioFileAsync(AudioFile audioFile);
     }
 }

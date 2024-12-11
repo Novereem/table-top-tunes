@@ -20,6 +20,9 @@ namespace Shared.Constants
 
             //Audio
             { SuccessCodeUser.AudioCreated, "Audio created successfully!" },
+
+            //Common
+            { SuccessCodeUser.Success, "Action executed successfully!" },
         };
 
         public static string GetSuccessMessage(SuccessCodeUser code)

@@ -6,6 +6,7 @@ using Shared.Models.DTOs;
 using Shared.Models;
 using Shared.Factories;
 using Shared.Interfaces.Services.Helpers;
+using TTTBackend.Data;
 
 namespace TTTBackend.Services.Helpers
 {
@@ -38,6 +39,18 @@ namespace TTTBackend.Services.Helpers
             }
 
             return ServiceResult<object>.SuccessResult();
+        }
+
+        public async Task<ServiceResult<List<AudioFile>>> RetrieveAudioFilesByUserIdAsync(Guid userId)
+        {
+            var audioFiles = await _audioData.GetAudioFilesByUserIdAsync(userId);
+
+            if (audioFiles == null)
+            {
+                audioFiles = new List<AudioFile>();
+            }
+
+            return ServiceResult<List<AudioFile>>.SuccessResult(audioFiles);
         }
 
         public async Task<ServiceResult<AudioFile>> RetrieveAudioFileByIdAsync(Guid audioFileId)

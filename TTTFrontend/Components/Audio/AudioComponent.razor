@@ -1,0 +1,15 @@
+﻿@using Shared.Models.DTOs
+@using Microsoft.AspNetCore.Components
+
+<div class="my-2 mx-3" style="cursor: pointer; width: 10rem; height: 10rem;">
+    <div class="scene-hover-effect h-100">
+        <div class="d-flex flex-column justify-content-center border py-5 lh-tight h-100">
+            <h5 class="m-0 my-3 text-center px-2">@Sound.Name</h5>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public AudioFileListItemDTO Sound { get; set; } = default!;
+}

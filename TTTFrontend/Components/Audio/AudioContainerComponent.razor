@@ -1,20 +1,46 @@
-﻿@using Shared.Models.DTOs;
+﻿@using Shared.Enums
+@using Shared.Models.DTOs;
 @using TTTFrontend.Services;
 @inject SelectedSceneService SelectedSceneService
+@inject UserSoundsService UserSoundsService
+@inject SceneService SceneService
 
 <div class="d-flex flex-column justify-content-between">
     @if (SelectedSceneService.SelectedScene != null)
     {
-        <div class="d-flex flex-row">
-            <MusicSoundsComponent MusicTracks="SelectedSceneService.MusicTracks" />
-            <AmbientSoundsComponent AmbientSounds="SelectedSceneService.AmbientSounds" />
-            <ActionSoundsComponent ActionSounds="SelectedSceneService.ActionSounds" />
+        <div class="d-flex flex-row" style="@GetSoundsStyle()">
+            <SoundListComponent Title="Music Tracks"
+                                Items="SelectedSceneService.MusicTracks"
+                                OnSoundDropped="soundId => AddSoundToSceneByCategory(soundId, AudioType.MusicTrack)" />
+            <SoundListComponent Title="Ambient Sounds"
+                                Items="SelectedSceneService.AmbientSounds"
+                                OnSoundDropped="soundId => AddSoundToSceneByCategory(soundId, AudioType.AmbientSound)" />
+            <SoundListComponent Title="Action Sounds"
+                                Items="SelectedSceneService.ActionSounds"
+                                OnSoundDropped="soundId => AddSoundToSceneByCategory(soundId, AudioType.SoundEffect)" />
             <SoundPresetsComponent />
         </div>
-    }
+        <div style="@GetBottomBarStyle()" class="hide-scrollbar">
+            <UserSoundsComponent OnToggleSoundFiles="ToggleSoundFilesExtended" IsExtended="soundFilesExtended" />
+        </div>
+    }   
 </div>
 
 @code {
+    private bool soundFilesExtended = false;
+
+    private string GetBottomBarStyle() =>
+        soundFilesExtended ? "height:50vh;" : "height:5vh; overflow: hidden;";
+
+    private string GetSoundsStyle() =>
+        soundFilesExtended ? "height:40vh;" : "height:85vh;";
+
+    private void ToggleSoundFilesExtended()
+    {
+        soundFilesExtended = !soundFilesExtended;
+        StateHasChanged();
+    }
+
     protected override void OnInitialized()
     {
         SelectedSceneService.OnSceneChanged += StateHasChanged;
@@ -23,5 +49,21 @@
     public void Dispose()
     {
         SelectedSceneService.OnSceneChanged -= StateHasChanged;
+    }
+
+    private async Task AddSoundToSceneByCategory(Guid soundId, AudioType category)
+    {
+        var result = await UserSoundsService.AddSoundToScene(soundId, SelectedSceneService.SelectedScene.Id, category);
+        if (result.Success)
+        {
+            await ReloadScene();
+        }
+    }
+
+    private async Task ReloadScene()
+    {
+        var sceneDetails = await SceneService.GetSceneAsync(SelectedSceneService.SelectedScene.Id);
+        SelectedSceneService.SelectedScene = sceneDetails.Data!;
+        StateHasChanged();
     }
 }

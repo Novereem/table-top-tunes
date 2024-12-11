@@ -11,7 +11,7 @@
     </div>
 
     <div class="list-group list-group-flush overflow-auto flex-grow-1 border-end hide-scrollbar">
-        @if (Scenes == null)
+        @if (isLoading)
         {
             <div class="d-flex justify-content-center align-items-center">Loading...</div>
         }
@@ -32,6 +32,7 @@
 
 @code {
     private List<SceneListItemDTO> Scenes = new();
+    private bool isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,8 +41,10 @@
 
     private async Task RefreshSceneList()
     {
+        isLoading = true;
         var scenes = await SceneService.GetScenesListAsync();
         Scenes = scenes.Data!;
+        isLoading = false;
     }
 
     private async Task LoadSceneDetails(Guid sceneId)

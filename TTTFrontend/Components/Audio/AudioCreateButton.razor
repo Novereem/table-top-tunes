@@ -1,0 +1,87 @@
+﻿@using TTTFrontend.Services
+@inject UserSoundsService UserSoundsService
+
+<div class="mt-2 mx-3" style="cursor: pointer; width: 10rem; height: 10rem;">
+    <div class="scene-hover-effect h-100" @onclick="ShowCreateAudioModal">
+        <div class="d-flex flex-column justify-content-center border py-5 lh-tight h-100">
+            <h2 class="m-0 my-3 text-center">+</h2>
+            <div class="text-center text-muted">
+                <small>Create a new audio file</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (IsModalVisible)
+{
+    <!-- Modal Backdrop -->
+    <div class="modal-backdrop fade show" style="z-index: 1040;"></div>
+
+    <!-- Modal -->
+    <div class="modal show d-block" tabindex="-1" style="z-index: 1050;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Audio File</h5>
+                    <button type="button" class="btn-close" @onclick="CloseCreateAudioModal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="audioFileName" class="form-label">
+                        Audio File Name: <span class="@(showAudioNameError ? "text-danger" : "text-dark")">*</span>
+                    </label>
+                    <input id="audioFileName"
+                           class="@(showAudioNameError ? "form-control border-danger" : "form-control")"
+                           @bind="NewAudioFileName"
+                           placeholder="Enter audio file name" />
+                    @if (showAudioNameError)
+                    {
+                        <small class="text-danger">Audio file name is required.</small>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseCreateAudioModal">Cancel</button>
+                    <button class="btn btn-outline-dark" @onclick="CreateAudioFile">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EventCallback OnAudioCreated { get; set; }
+
+    private bool IsModalVisible = false;
+    private string NewAudioFileName = string.Empty;
+    private bool showAudioNameError = false;
+
+    private void ShowCreateAudioModal()
+    {
+        IsModalVisible = true;
+    }
+
+    private void CloseCreateAudioModal()
+    {
+        showAudioNameError = false;
+        IsModalVisible = false;
+        NewAudioFileName = string.Empty;
+    }
+
+    private async Task CreateAudioFile()
+    {
+        if (string.IsNullOrWhiteSpace(NewAudioFileName))
+        {
+            showAudioNameError = true;
+            return;
+        }
+
+        showAudioNameError = false;
+
+        var response = await UserSoundsService.CreateAudioFileAsync(NewAudioFileName);
+        if (response.Success)
+        {
+            await OnAudioCreated.InvokeAsync();
+        }
+
+        CloseCreateAudioModal();
+    }
+}

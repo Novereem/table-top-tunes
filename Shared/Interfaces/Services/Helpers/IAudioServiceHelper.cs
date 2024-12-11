@@ -13,6 +13,7 @@ namespace Shared.Interfaces.Services.Helpers
     {
         ServiceResult<object> ValidateAudioFileCreateRequest(AudioFileCreateDTO createDTO);
         ServiceResult<object> ValidateAudioFileAssignRequest(AudioFileAssignDTO assignDTO);
+        Task<ServiceResult<List<AudioFile>>> RetrieveAudioFilesByUserIdAsync(Guid userId);
         Task<ServiceResult<AudioFile>> RetrieveAudioFileByIdAsync(Guid audioFileId);
     }
 }

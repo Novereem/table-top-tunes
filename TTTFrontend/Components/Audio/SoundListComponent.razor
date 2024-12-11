@@ -1,0 +1,70 @@
+﻿@using Shared.Models.DTOs
+@inject IJSRuntime JSRuntime
+
+<div class="border-bottom border-end drop-zone @(isDraggingOver ? "highlight" : "")"
+     style="width: 20vw;"
+     @ondragover="OnDragOver" @ondragover:preventDefault="true"
+     @ondragenter="OnDragEnter"
+     @ondragleave="OnDragLeave"
+     @ondrop="OnDrop">
+    <h3 class="text-center py-1 m-0">@Title</h3>
+    @if (Items != null && Items.Any())
+    {
+        <div class="d-flex flex-row justify-content-between">
+            @foreach (var item in Items)
+            {
+                <div class="my-2 mx-3" style="cursor: pointer; width: 6.2rem; height: 6.2rem;">
+                    <div class="scene-hover-effect h-100">
+                        <div class="d-flex flex-column justify-content-center border py-5 lh-tight h-100">
+                            <h7 class="m-0 my-3 text-center px-2">@item.Name</h7>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-center">No @Title available.</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public List<AudioFileResponseDTO> Items { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnSoundDropped { get; set; }
+
+    private bool isDraggingOver = false;
+
+    private Task OnDragOver(DragEventArgs e)
+    {
+        return Task.CompletedTask;
+    }
+
+    private void OnDragEnter()
+    {
+        isDraggingOver = true;
+    }
+
+    private void OnDragLeave()
+    {
+        isDraggingOver = false;
+    }
+
+    private async Task OnDrop()
+    {
+        isDraggingOver = false;
+
+        // Retrieve the dragged sound ID
+        var soundId = await JSRuntime.InvokeAsync<string>("dragDropHelper.getData", "draggedSoundId");
+        if (string.IsNullOrEmpty(soundId)) return;
+
+        // Notify the parent component that a sound has been dropped
+        await OnSoundDropped.InvokeAsync(Guid.Parse(soundId));
+    }
+}

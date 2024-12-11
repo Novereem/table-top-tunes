@@ -15,7 +15,6 @@ namespace Shared.Models.Extensions
             {
                 Id = audioFile.Id,
                 Name = audioFile.Name,
-                FilePath = audioFile.FilePath,
                 CreatedAt = audioFile.CreatedAt,
                 Type = audioFile.Type,
                 SceneId = audioFile.Scene?.Id
@@ -30,6 +29,16 @@ namespace Shared.Models.Extensions
                 FilePath = "/path/to/files/" + Guid.NewGuid() + ".mp3",
                 User = user,
                 CreatedAt = DateTime.UtcNow
+            };
+        }
+
+        public static AudioFileListItemDTO ToAudioFileListItemDTO(this AudioFile audioFile)
+        {
+            return new AudioFileListItemDTO
+            {
+                Id = audioFile.Id,
+                Name = audioFile.Name,
+                CreatedAt = audioFile.CreatedAt
             };
         }
 

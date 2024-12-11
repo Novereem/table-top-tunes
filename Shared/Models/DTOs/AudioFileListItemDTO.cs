@@ -7,12 +7,10 @@ using System.Threading.Tasks;
 
 namespace Shared.Models.DTOs
 {
-    public class AudioFileResponseDTO
+    public class AudioFileListItemDTO
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public DateTime CreatedAt { get; set; }
-        public AudioType? Type { get; set; }
-        public Guid? SceneId { get; set; }
     }
 }

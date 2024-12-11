@@ -1,0 +1,57 @@
+﻿@using Shared.Models.DTOs
+@using TTTFrontend.Services
+@inject SelectedUserSoundsService SelectedUserSoundsService
+@inject UserSoundsService UserSoundsService
+@inject IJSRuntime JSRuntime
+
+<div class="overflow-auto">
+
+    <div class="border-bottom mb-4 w-100 text-center scene-hover-effect" @onclick="OnToggleSoundFiles" style="cursor: pointer; height: 5vh">
+        @(IsExtended ? "v Audio Files v" : "^ Audio Files ^")
+    </div>
+    
+    @if (SelectedUserSoundsService.UserSounds.Any())
+    {
+        <div class="d-flex flex-wrap mb-2">
+            @foreach (var sound in SelectedUserSoundsService.UserSounds)
+            {
+                <div draggable="true" @ondragstart="@(() => OnDragStart(sound))">
+                    <AudioComponent Sound="sound" />
+                </div>
+            }
+            <AudioCreateButton OnAudioCreated="ReloadAudioFiles" />
+        </div>
+        
+    }
+    else
+    {
+        <p>No sounds available.</p>
+    }
+    
+</div>
+
+@code {
+    [Parameter] public EventCallback OnToggleSoundFiles { get; set; }
+    [Parameter] public bool IsExtended { get; set; }
+
+    protected override void OnInitialized()
+    {
+        SelectedUserSoundsService.OnSoundsChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        SelectedUserSoundsService.OnSoundsChanged -= StateHasChanged;
+    }
+
+    private async Task ReloadAudioFiles()
+    {
+        var userSoundsResponse = await UserSoundsService.GetUserSoundsAsync();
+        await SelectedUserSoundsService.SetUserSoundsAsync(userSoundsResponse.Data);
+    }
+
+    private async Task OnDragStart(AudioFileListItemDTO sound)
+    {
+        await JSRuntime.InvokeVoidAsync("dragDropHelper.setData", "draggedSoundId", sound.Id.ToString());
+    }
+}
