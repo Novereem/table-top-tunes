@@ -1,8 +1,10 @@
-﻿using Shared.Factories;
+﻿using Shared.Enums;
+using Shared.Factories;
 using Shared.Models.Common;
 using Shared.Models.DTOs;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 public class UserSoundsService
 {
@@ -43,6 +45,26 @@ public class UserSoundsService
         catch
         {
             return ApiResponseFactory.CreateErrorResponse<object>("An error occurred creating the audio file. Please try again later.");
+        }
+    }
+
+    public async Task<ApiResponse<AudioFileResponseDTO>> AddSoundToScene(Guid soundId, Guid sceneId, AudioType audioType)
+    {
+        try
+        {
+            var audioFileAssignDTO = new AudioFileAssignDTO { AudioFileId = soundId, SceneId = sceneId, Type = audioType };
+            var response = await _httpClient.PutAsJsonAsync($"{_baseUrl}/audio/assign", audioFileAssignDTO);
+            var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<AudioFileResponseDTO>>(new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            });
+
+            return apiResponse ?? ApiResponseFactory.CreateFallbackResponse<AudioFileResponseDTO>();
+        }
+        catch
+        {
+            return ApiResponseFactory.CreateErrorResponse<AudioFileResponseDTO>("An error occurred getting the scene, please try again later.");
         }
     }
 }

@@ -15,7 +15,6 @@ namespace Shared.Models.Extensions
             {
                 Id = audioFile.Id,
                 Name = audioFile.Name,
-                FilePath = audioFile.FilePath,
                 CreatedAt = audioFile.CreatedAt,
                 Type = audioFile.Type,
                 SceneId = audioFile.Scene?.Id

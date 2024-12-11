@@ -1,6 +1,12 @@
 ﻿@using Shared.Models.DTOs
+@inject IJSRuntime JSRuntime
 
-<div class="border-bottom border-end" style="width: 20vw;">
+<div class="border-bottom border-end drop-zone @(isDraggingOver ? "highlight" : "")"
+     style="width: 20vw;"
+     @ondragover="OnDragOver" @ondragover:preventDefault="true"
+     @ondragenter="OnDragEnter"
+     @ondragleave="OnDragLeave"
+     @ondrop="OnDrop">
     <h3 class="text-center py-1 m-0">@Title</h3>
     @if (Items != null && Items.Any())
     {
@@ -23,4 +29,37 @@
 
     [Parameter]
     public List<AudioFileResponseDTO> Items { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnSoundDropped { get; set; }
+
+    private bool isDraggingOver = false;
+
+    private Task OnDragOver(DragEventArgs e)
+    {
+        return Task.CompletedTask;
+    }
+
+    private void OnDragEnter()
+    {
+        isDraggingOver = true;
+    }
+
+    private void OnDragLeave()
+    {
+        isDraggingOver = false;
+    }
+
+    private async Task OnDrop()
+    {
+        isDraggingOver = false;
+
+        // Retrieve the dragged sound ID
+        var soundId = await JSRuntime.InvokeAsync<string>("dragDropHelper.getData", "draggedSoundId");
+        Console.WriteLine(soundId);
+        if (string.IsNullOrEmpty(soundId)) return;
+
+        // Notify the parent component that a sound has been dropped
+        await OnSoundDropped.InvokeAsync(Guid.Parse(soundId));
+    }
 }

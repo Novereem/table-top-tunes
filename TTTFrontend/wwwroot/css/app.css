@@ -120,3 +120,12 @@ code {
 .hide-scrollbar::-webkit-scrollbar {
     display: none; /* Safari and Chrome */
 }
+
+.drop-zone {
+    border: 2px dashed transparent;
+    transition: border 0.2s;
+}
+
+.drop-zone.highlight {
+    border-color: #007bff;
+}

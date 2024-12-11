@@ -1,6 +1,8 @@
-﻿@using TTTFrontend.Services
+﻿@using Shared.Models.DTOs
+@using TTTFrontend.Services
 @inject SelectedUserSoundsService SelectedUserSoundsService
 @inject UserSoundsService UserSoundsService
+@inject IJSRuntime JSRuntime
 
 <div class="overflow-auto">
 
@@ -13,7 +15,7 @@
         <div class="d-flex flex-wrap mb-2">
             @foreach (var sound in SelectedUserSoundsService.UserSounds)
             {
-                <div>
+                <div draggable="true" @ondragstart="@(() => OnDragStart(sound))">
                     <AudioComponent Sound="sound" />
                 </div>
             }
@@ -46,5 +48,10 @@
     {
         var userSoundsResponse = await UserSoundsService.GetUserSoundsAsync();
         await SelectedUserSoundsService.SetUserSoundsAsync(userSoundsResponse.Data);
+    }
+
+    private async Task OnDragStart(AudioFileListItemDTO sound)
+    {
+        await JSRuntime.InvokeVoidAsync("dragDropHelper.setData", "draggedSoundId", sound.Id.ToString());
     }
 }

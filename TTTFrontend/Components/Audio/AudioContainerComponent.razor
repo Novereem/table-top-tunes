@@ -1,14 +1,23 @@
-﻿@using Shared.Models.DTOs;
+﻿@using Shared.Enums
+@using Shared.Models.DTOs;
 @using TTTFrontend.Services;
 @inject SelectedSceneService SelectedSceneService
+@inject UserSoundsService UserSoundsService
+@inject SceneService SceneService
 
 <div class="d-flex flex-column justify-content-between">
     @if (SelectedSceneService.SelectedScene != null)
     {
         <div class="d-flex flex-row" style="@GetSoundsStyle()">
-            <SoundListComponent Title="Music Tracks" Items="SelectedSceneService.MusicTracks" />
-            <SoundListComponent Title="Ambient Sounds" Items="SelectedSceneService.AmbientSounds" />
-            <SoundListComponent Title="Action Sounds" Items="SelectedSceneService.ActionSounds" />
+            <SoundListComponent Title="Music Tracks"
+                                Items="SelectedSceneService.MusicTracks"
+                                OnSoundDropped="soundId => AddSoundToSceneByCategory(soundId, AudioType.MusicTrack)" />
+            <SoundListComponent Title="Ambient Sounds"
+                                Items="SelectedSceneService.AmbientSounds"
+                                OnSoundDropped="soundId => AddSoundToSceneByCategory(soundId, AudioType.AmbientSound)" />
+            <SoundListComponent Title="Action Sounds"
+                                Items="SelectedSceneService.ActionSounds"
+                                OnSoundDropped="soundId => AddSoundToSceneByCategory(soundId, AudioType.SoundEffect)" />
             <SoundPresetsComponent />
         </div>
         <div style="@GetBottomBarStyle()" class="hide-scrollbar">
@@ -40,5 +49,22 @@
     public void Dispose()
     {
         SelectedSceneService.OnSceneChanged -= StateHasChanged;
+    }
+
+    private async Task AddSoundToSceneByCategory(Guid soundId, AudioType category)
+    {
+        var result = await UserSoundsService.AddSoundToScene(soundId, SelectedSceneService.SelectedScene.Id, category);
+        //Console.WriteLine(result.Success);
+        if (result.Success)
+        {
+            await ReloadScene();
+        }
+    }
+
+    private async Task ReloadScene()
+    {
+        var sceneDetails = await SceneService.GetSceneAsync(SelectedSceneService.SelectedScene.Id);
+        SelectedSceneService.SelectedScene = sceneDetails.Data!;
+        StateHasChanged();
     }
 }
