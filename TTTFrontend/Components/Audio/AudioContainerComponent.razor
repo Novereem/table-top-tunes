@@ -54,7 +54,6 @@
     private async Task AddSoundToSceneByCategory(Guid soundId, AudioType category)
     {
         var result = await UserSoundsService.AddSoundToScene(soundId, SelectedSceneService.SelectedScene.Id, category);
-        //Console.WriteLine(result.Success);
         if (result.Success)
         {
             await ReloadScene();
