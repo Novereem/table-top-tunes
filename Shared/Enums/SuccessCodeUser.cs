@@ -17,5 +17,8 @@ namespace Shared.Enums
 
         //Audio
         AudioCreated,
+
+        //Common
+        Success,
     }
 }

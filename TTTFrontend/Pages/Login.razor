@@ -6,6 +6,8 @@
 @inject NavigationManager NavigationManager
 @inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
 @inject AuthenticationService AuthService
+@inject SelectedUserSoundsService SelectedUserSoundsService
+@inject UserSoundsService UserSoundsService
 
 <h3 class="text-center mt-5">Login</h3>
 
@@ -91,6 +93,12 @@
         {
             succcessMessage = response.Message;
             LocalStorage.SetItem("authToken", response.Data?.Token);
+            //Update Audio
+            var soundsResponse = await UserSoundsService.GetUserSoundsAsync();
+            if (soundsResponse.Success)
+            {
+                await SelectedUserSoundsService.SetUserSoundsAsync(soundsResponse.Data);
+            }
             NavigationManager.NavigateTo("/");
         }
         else

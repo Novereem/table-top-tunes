@@ -24,6 +24,23 @@ namespace TTTBackend.Data
             return await _context.AudioFiles.FirstOrDefaultAsync(af => af.Id == audioFileId);
         }
 
+        public async Task<List<AudioFile>> GetAudioFilesByUserIdAsync(Guid userId)
+        {
+            return await _context.AudioFiles
+                .Where(audio => audio.User.Id == userId)
+                .OrderBy(audio => audio.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<Scene>> GetScenesByUserIdAsync(Guid userId)
+        {
+            return await _context.Scenes
+                .Where(scene => scene.User.Id == userId)
+                .OrderBy(scene => scene.CreatedAt)
+                .Include(scene => scene.AudioFiles)
+                .ToListAsync();
+        }
+
         public async Task UpdateAudioFileAsync(AudioFile audioFile)
         {
             _context.AudioFiles.Update(audioFile);

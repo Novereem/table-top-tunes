@@ -32,6 +32,17 @@ namespace TTTBackend.Controllers
                 
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetUserAudioFiles()
+        {
+            var serviceResult = await _audioService.GetUserAudioFilesAsync(User);
+
+            return StatusCode(
+                (int)(serviceResult.HttpStatusCode ?? HttpStatusCode.OK),
+                serviceResult.ToApiResponse()
+            );
+        }
+
         [HttpPut("assign")]
         public async Task<IActionResult> AssignAudioFileToScene([FromBody] AudioFileAssignDTO assignDTO)
         {

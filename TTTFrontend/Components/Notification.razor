@@ -1,0 +1,48 @@
+﻿@using TTTFrontend.Services
+@inject NotificationService NotificationService
+
+<div class="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        <div class="notification @Type">
+            @Message
+        </div>
+    }
+</div>
+
+@code {
+    private string? Message;
+    private string Type = "error";
+
+    protected override void OnInitialized()
+    {
+        NotificationService.OnShow += ShowNotification;
+        NotificationService.OnHide += HideNotification;
+    }
+
+    private void ShowNotification(string message, string type)
+    {
+        Message = message;
+        Type = type;
+        StateHasChanged();
+
+        // Auto-hide after 5 seconds
+        _ = Task.Delay(5000).ContinueWith(_ =>
+        {
+            HideNotification();
+        });
+    }
+
+    private void HideNotification()
+    {
+        Message = null;
+        Type = "error";
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnShow -= ShowNotification;
+        NotificationService.OnHide -= HideNotification;
+    }
+}

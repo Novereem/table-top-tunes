@@ -33,6 +33,16 @@ namespace Shared.Models.Extensions
             };
         }
 
+        public static AudioFileListItemDTO ToAudioFileListItemDTO(this AudioFile audioFile)
+        {
+            return new AudioFileListItemDTO
+            {
+                Id = audioFile.Id,
+                Name = audioFile.Name,
+                CreatedAt = audioFile.CreatedAt
+            };
+        }
+
         public static AudioFile ToAudioFileFromAssignDTO(this AudioFileAssignDTO assignDTO, AudioFile audioFile, Scene scene)
         {
             audioFile.Scene = scene;

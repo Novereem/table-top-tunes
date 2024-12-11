@@ -13,6 +13,7 @@ namespace Shared.Interfaces.Services
     public interface IAudioService
     {
         Task<ServiceResult<AudioFileResponseDTO>> CreateAudioFileAsync(AudioFileCreateDTO audioFileCreateDTO, ClaimsPrincipal user);
+        Task<ServiceResult<List<AudioFileListItemDTO>>> GetUserAudioFilesAsync(ClaimsPrincipal user);
         Task<ServiceResult<AudioFileResponseDTO>> AssignAudioFileToSceneAsync(AudioFileAssignDTO assignDTO);
     }
 }

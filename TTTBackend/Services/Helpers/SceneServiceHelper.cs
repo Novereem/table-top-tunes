@@ -71,7 +71,6 @@ namespace TTTBackend.Services.Helpers
 
             if (scenes == null)
             {
-                _logger.LogWarning("No scenes found for user. UserId: {UserId}", userId);
                 scenes = new List<Scene>();
             }
 

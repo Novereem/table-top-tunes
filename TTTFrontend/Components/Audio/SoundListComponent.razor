@@ -1,0 +1,26 @@
+﻿@using Shared.Models.DTOs
+
+<div class="border-bottom border-end" style="width: 20vw;">
+    <h3 class="text-center py-1 m-0">@Title</h3>
+    @if (Items != null && Items.Any())
+    {
+        <ul>
+            @foreach (var item in Items)
+            {
+                <li>@item.Name</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-center">No @Title available.</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public List<AudioFileResponseDTO> Items { get; set; }
+}

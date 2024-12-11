@@ -12,6 +12,10 @@ using Shared.Interfaces.Data;
 using Serilog;
 using Shared.Interfaces.Services.CommonServices;
 using TTTBackend.Services.Helpers;
+using Shared.Interfaces.Services.Helpers;
+using System.Text.Json;
+using Shared.Factories;
+using Shared.Models.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,9 +41,9 @@ builder.Services.AddScoped<ISceneData, SceneData>();
 builder.Services.AddScoped<IAudioService, AudioService>();
 builder.Services.AddScoped<IAudioData, AudioData>();
 
-builder.Services.AddScoped<SceneServiceHelper>();
-builder.Services.AddScoped<AuthenticationServiceHelper>();
-builder.Services.AddScoped<AudioServiceHelper>();
+builder.Services.AddScoped<ISceneServiceHelper, SceneServiceHelper>();
+builder.Services.AddScoped<IAuthenticationServiceHelper, AuthenticationServiceHelper>();
+builder.Services.AddScoped<IAudioServiceHelper, AudioServiceHelper>();
 
 // CORS Policy
 builder.Services.AddCors(options =>
@@ -77,6 +81,26 @@ builder.Services.AddAuthentication(options =>
 		ValidAudience = "https://localhost:7040",
 		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
 	};
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            if (context.Exception is SecurityTokenExpiredException)
+            {
+                // Create the invalid session response
+                var response = ApiResponseFactory.CreateInvalidSessionResponse<object>();
+                var jsonResponse = JsonSerializer.Serialize(response);
+
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                return context.Response.WriteAsync(jsonResponse);
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // Database Configuration

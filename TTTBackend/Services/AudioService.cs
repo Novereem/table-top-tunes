@@ -13,6 +13,7 @@ using System.Security.Claims;
 using TTTBackend.Services.Helpers;
 using Shared.Factories;
 using Shared.Interfaces.Services.Helpers;
+using System.Collections.Generic;
 
 namespace TTTBackend.Services
 {
@@ -76,6 +77,34 @@ namespace TTTBackend.Services
                 _logger.LogError(ex, "Unexpected error while creating audio file. Name: {Name}", audioFileCreateDTO.Name);
                 return PredefinedFailures.GetFailure<AudioFileResponseDTO>(ErrorCode.InternalServerError);
             }
+        }
+
+        public async Task<ServiceResult<List<AudioFileListItemDTO>>> GetUserAudioFilesAsync(ClaimsPrincipal user)
+        {
+            var userIdResult = _userClaimsService.GetUserIdFromClaims(user);
+            if (!userIdResult.Success)
+            {
+                return userIdResult.ToFailureResult<List<AudioFileListItemDTO>>();
+            }
+
+            try
+            {
+                var audiosResult = await _helper.RetrieveAudioFilesByUserIdAsync(userIdResult.Data);
+                if (!audiosResult.Success)
+                {
+                    return userIdResult.ToFailureResult<List<AudioFileListItemDTO>>();
+                }
+
+                var audioFileListItems = audiosResult.Data!.Select(audio => audio.ToAudioFileListItemDTO()).ToList();
+
+                return ServiceResult<List<AudioFileListItemDTO>>.SuccessResult(audioFileListItems);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while retrieving audio files for user: {UserId}", userIdResult.Data);
+                return PredefinedFailures.GetFailure<List<AudioFileListItemDTO>>(ErrorCode.InternalServerError);
+            }
+            throw new NotImplementedException();
         }
 
         public async Task<ServiceResult<AudioFileResponseDTO>> AssignAudioFileToSceneAsync(AudioFileAssignDTO assignDTO)

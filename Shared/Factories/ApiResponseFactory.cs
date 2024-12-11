@@ -1,4 +1,6 @@
-﻿using Shared.Models.Common;
+﻿using Shared.Constants;
+using Shared.Enums;
+using Shared.Models.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +17,7 @@ namespace Shared.Factories
             {
                 Success = true,
                 Data = data,
-                Message = "Operation completed successfully."
+                Message = SuccessMessagesUser.GetSuccessMessage(SuccessCodeUser.Success)
             };
         }
 
@@ -29,12 +31,21 @@ namespace Shared.Factories
             };
         }
 
-        public static ApiResponse<T> CreateFallbackResponse<T>(string errorMessage = "Internal server error, please try again later.")
+        public static ApiResponse<T> CreateFallbackResponse<T>()
         {
             return new ApiResponse<T>
             {
                 Success = false,
-                Message = errorMessage
+                Message = ErrorMessagesUser.GetErrorMessage(ErrorCodeUser.InternalServerError)
+            };
+        }
+        
+        public static ApiResponse<T> CreateInvalidSessionResponse<T>()
+        {
+            return new ApiResponse<T>
+            {
+                Success = false,
+                Message = ErrorMessagesUser.GetErrorMessage(ErrorCodeUser.InvalidSession)
             };
         }
     }
