@@ -122,10 +122,10 @@ code {
 }
 
 .drop-zone {
-    border: 2px dashed transparent;
-    transition: border 0.2s;
+    background-color: #ffffff;
+    transition: 0.2s;
 }
 
 .drop-zone.highlight {
-    border-color: #007bff;
+    background-color: #bdbdbd;
 }
