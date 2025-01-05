@@ -11,6 +11,8 @@ namespace Shared.Enums
         //Authentication
         UsernameTaken,
         EmailTaken,
+        InvalidEmailFormat,
+        PasswordTooShort,
         InvalidCredentials,
         InvalidSession,
 

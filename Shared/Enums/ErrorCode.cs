@@ -16,6 +16,8 @@ namespace Shared.Enums
         MissingToken,
         UnauthorizedToken,
         UserNotFound,
+        InvalidEmailFormat,
+        PasswordTooShort,
 
         //Audio & Scene
         InvalidInput,

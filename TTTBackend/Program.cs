@@ -64,6 +64,9 @@ if (string.IsNullOrEmpty(secretKey))
 	throw new InvalidOperationException("JWT secret key is not set in the .env file.");
 }
 
+var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "https://localhost:7041";
+var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "https://localhost:7040";
+
 builder.Services.AddAuthentication(options =>
 {
 	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -77,8 +80,8 @@ builder.Services.AddAuthentication(options =>
 		ValidateAudience = true,
 		ValidateLifetime = true,
 		ValidateIssuerSigningKey = true,
-		ValidIssuer = "https://localhost:7041",
-		ValidAudience = "https://localhost:7040",
+		ValidIssuer = issuer,
+		ValidAudience = audience,
 		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
 	};
 
@@ -127,29 +130,35 @@ var app = builder.Build();
 // Database Initialization
 using (var scope = app.Services.CreateScope())
 {
-	var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-	var connection = dbContext.Database.GetDbConnection();
-	var originalConnectionString = connection.ConnectionString;
-	var noDbConnectionString = originalConnectionString.Replace("Database=tttdatabase;", "");
-	connection.ConnectionString = noDbConnectionString;
+    // Only run migrations etc. if *not* using InMemory
+    if (!string.Equals(dbContext.Database.ProviderName,
+                       "Microsoft.EntityFrameworkCore.InMemory",
+                       StringComparison.OrdinalIgnoreCase))
+    {
+        var connection = dbContext.Database.GetDbConnection();
+        var originalConnectionString = connection.ConnectionString;
+        var noDbConnectionString = originalConnectionString.Replace("Database=tttdatabase;", "");
+        connection.ConnectionString = noDbConnectionString;
 
-	try
-	{
-		connection.Open();
-		var command = connection.CreateCommand();
-		command.CommandText = "CREATE DATABASE IF NOT EXISTS `tttdatabase`;";
-		command.ExecuteNonQuery();
-	}
-	finally
-	{
-		connection.Close();
-	}
+        try
+        {
+            connection.Open();
+            var command = connection.CreateCommand();
+            command.CommandText = "CREATE DATABASE IF NOT EXISTS `tttdatabase`;";
+            command.ExecuteNonQuery();
+        }
+        finally
+        {
+            connection.Close();
+        }
 
-	connection.ConnectionString = originalConnectionString;
-	connection.Open();
-	dbContext.Database.Migrate();
-	connection.Close();
+        connection.ConnectionString = originalConnectionString;
+        connection.Open();
+        dbContext.Database.Migrate();
+        connection.Close();
+    }
 }
 
 // Middleware
@@ -166,3 +175,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

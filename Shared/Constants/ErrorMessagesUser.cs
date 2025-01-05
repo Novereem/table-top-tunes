@@ -14,6 +14,8 @@ namespace Shared.Constants
             //Authentication
             { ErrorCodeUser.UsernameTaken, "Username is already taken." },
             { ErrorCodeUser.EmailTaken, "Email is already registered." },
+            { ErrorCodeUser.InvalidEmailFormat, "Email format is invalid." },
+            { ErrorCodeUser.PasswordTooShort, "Password is too short." },
             { ErrorCodeUser.InvalidCredentials, "Wrong username or password." },
             { ErrorCodeUser.InvalidSession, "Session expired, please log in again to continue using the app." },
 

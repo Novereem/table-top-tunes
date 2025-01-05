@@ -88,7 +88,7 @@ namespace TTTBackend.Services
                 var sceneResult = await _helper.RetrieveSceneByIdAsync(id);
                 if (!sceneResult.Success)
                 {
-                    sceneResult.ToFailureResult<SceneGetResponseDTO>();
+                    return sceneResult.ToFailureResult<SceneGetResponseDTO>();
                 }
 
                 return ServiceResult<SceneGetResponseDTO>.SuccessResult(

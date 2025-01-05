@@ -35,3 +35,27 @@ jobs:
 
       - name: Run tests
         run: dotnet test --configuration Release --no-build --framework net8.0 --verbosity normal
+
+      - name: Install k6
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnupg2
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Run soak test
+        run: |
+          cd TTTBackend.Tests/Load
+          k6 run soaktest.js --insecure-skip-tls-verify
+          
+      - name: Run load test
+        run: |
+          cd TTTBackend.Tests/Load
+          k6 run loadtest.js --insecure-skip-tls-verify
+
+      - name: Run spike test
+        run: |
+          cd TTTBackend.Tests/Load
+          k6 run spiketest.js --insecure-skip-tls-verify

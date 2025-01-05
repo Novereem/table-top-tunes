@@ -43,6 +43,21 @@ namespace TTTBackend.Services.Helpers
                 return PredefinedFailures.GetFailure<object>(ErrorCode.EmailTaken);
             }
 
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(registrationDTO.Email);
+                if (addr.Address != registrationDTO.Email)
+                    return PredefinedFailures.GetFailure<object>(ErrorCode.InvalidEmailFormat);
+            }
+            catch
+            {
+                return PredefinedFailures.GetFailure<object>(ErrorCode.InvalidEmailFormat);
+            }
+
+            if (registrationDTO.Password.Length < 5)
+            {
+                return PredefinedFailures.GetFailure<object>(ErrorCode.PasswordTooShort);
+            }
             return ServiceResult<object>.SuccessResult();
         }
 

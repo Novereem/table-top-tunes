@@ -19,6 +19,8 @@ namespace Shared.Factories
             { ErrorCode.InvalidCredentials, (ErrorCodeUser.InvalidCredentials, HttpStatusCode.Unauthorized) },
             { ErrorCode.JWTNullOrEmpty, (ErrorCodeUser.InternalServerError, HttpStatusCode.InternalServerError) },
             { ErrorCode.UnauthorizedToken, (ErrorCodeUser.InternalServerError, HttpStatusCode.InternalServerError) },
+            { ErrorCode.InvalidEmailFormat, (ErrorCodeUser.InvalidEmailFormat, HttpStatusCode.BadRequest) },
+            { ErrorCode.PasswordTooShort, (ErrorCodeUser.PasswordTooShort, HttpStatusCode.BadRequest) },
 
             //Scenes & Audio
             { ErrorCode.InvalidInput, (ErrorCodeUser.InternalServerError, HttpStatusCode.InternalServerError) },
@@ -30,7 +32,7 @@ namespace Shared.Factories
             //Common
             { ErrorCode.UnknownError, (ErrorCodeUser.UnknownError, HttpStatusCode.InternalServerError) },
             { ErrorCode.InternalServerError, (ErrorCodeUser.InternalServerError, HttpStatusCode.InternalServerError) },
-            { ErrorCode.ResourceNotFound, (ErrorCodeUser.InternalServerError, HttpStatusCode.InternalServerError) },
+            { ErrorCode.ResourceNotFound, (ErrorCodeUser.InternalServerError, HttpStatusCode.NotFound) },
 
             { ErrorCode.CreationFailed, (ErrorCodeUser.CreationFailed, HttpStatusCode.InternalServerError) },
         };

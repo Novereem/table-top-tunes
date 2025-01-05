@@ -70,7 +70,7 @@ namespace TTTBackend.Services
                     newAudioFile.ToAudioFileResponseDTO(),
                     SuccessMessages.GetSuccessMessage(SuccessCode.Success),
                     SuccessMessagesUser.GetSuccessMessage(SuccessCodeUser.AudioCreated),
-                    httpStatusCode: HttpStatusCode.OK);
+                    httpStatusCode: HttpStatusCode.Created);
             }
             catch (Exception ex)
             {
