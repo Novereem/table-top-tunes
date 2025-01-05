@@ -108,13 +108,22 @@ builder.Services.AddAuthentication(options =>
 
 // Database Configuration
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
-if (string.IsNullOrEmpty(connectionString))
-{
-	throw new InvalidOperationException("DB_CONNECTION_STRING is not set in the .env file.");
-}
+var useInMemory = Environment.GetEnvironmentVariable("USE_IN_MEMORY") == "true";
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-	options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 23))));
+if (useInMemory)
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseInMemoryDatabase("K6TestDb"));
+}
+else
+{
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("DB_CONNECTION_STRING is not set.");
+    }
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 23))));
+}
 
 // Add remaining services
 builder.Services.AddAuthorization();
