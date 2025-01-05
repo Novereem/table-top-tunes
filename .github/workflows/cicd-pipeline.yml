@@ -36,6 +36,11 @@ jobs:
       - name: Run tests
         run: dotnet test --configuration Release --no-build --framework net8.0 --verbosity normal
 
+      - name: Start ASP.NET Core app
+        run: |
+          nohup dotnet run --configuration Release --project ./TTTBackend/TTTBackend.csproj --urls "https://localhost:7041" &
+          sleep 10
+          
       - name: Install k6
         run: |
           sudo apt-get update
