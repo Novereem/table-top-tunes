@@ -14,7 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<SoundPreset> SoundPresets { get; set; }
     public DbSet<PresetSound> PresetSounds { get; set; }
     public DbSet<AudioFile> AudioFiles { get; set; }
-
+    public DbSet<SceneAudioFile> SceneAudioFiles { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -37,13 +37,6 @@ public class ApplicationDbContext : DbContext
             .WithMany(u => u.Scenes)
             .HasForeignKey(s => s.UserId)
             .IsRequired();
-
-        // Scene -> AudioFiles
-        modelBuilder.Entity<AudioFile>()
-            .HasOne(af => af.Scene)
-            .WithMany(s => s.AudioFiles)
-            .HasForeignKey(af => af.SceneId)
-            .IsRequired(false);
 
         // User -> AudioFiles
         modelBuilder.Entity<AudioFile>()
@@ -73,9 +66,24 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey<PresetSound>(ps => ps.SoundId)
             .IsRequired(false);
 
+        // Scene <-> AudioFile Many-to-Many Configuration
+        modelBuilder.Entity<SceneAudioFile>()
+            .HasKey(sa => new { sa.SceneId, sa.AudioFileId, sa.Type });
+
+        //modelBuilder.Entity<SceneAudioFile>()
+        //    .HasOne(sa => sa.Scene)
+        //    .WithMany(s => s.SceneAudioFiles)
+        //    .HasForeignKey(sa => sa.SceneId);
+
+        //modelBuilder.Entity<SceneAudioFile>()
+        //    .HasOne(sa => sa.AudioFile)
+        //    .WithMany(af => af.SceneAudioFiles)
+        //    .HasForeignKey(sa => sa.AudioFileId);
+
         // Enum Configurations
-        modelBuilder.Entity<AudioFile>()
-            .Property(af => af.Type)
-            .HasConversion<string>();
+        modelBuilder.Entity<SceneAudioFile>()
+            .Property(sa => sa.Type)
+            .HasConversion<string>()
+            .IsRequired();
     }
 }

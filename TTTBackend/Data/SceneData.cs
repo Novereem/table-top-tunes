@@ -24,16 +24,18 @@ namespace TTTBackend.Data
         {
             return await _context.Scenes
                 .Include(s => s.User)
-                .Include(scene => scene.AudioFiles)
+                .Include(scene => scene.SceneAudioFiles)
+                    .ThenInclude(sa => sa.AudioFile)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
-		public async Task<List<Scene>> GetScenesByUserIdAsync(Guid userId)
-		{
-			return await _context.Scenes
-				.Where(scene => scene.User.Id == userId)
+        public async Task<List<Scene>> GetScenesByUserIdAsync(Guid userId)
+        {
+            return await _context.Scenes
+                .Where(scene => scene.User.Id == userId)
                 .OrderBy(scene => scene.CreatedAt)
-                .Include(scene => scene.AudioFiles)
+                .Include(scene => scene.SceneAudioFiles)
+                    .ThenInclude(sa => sa.AudioFile)
                 .ToListAsync();
-		}
-	}
+        }
+    }
 }

@@ -15,9 +15,7 @@ namespace Shared.Models.Extensions
             {
                 Id = audioFile.Id,
                 Name = audioFile.Name,
-                CreatedAt = audioFile.CreatedAt,
-                Type = audioFile.Type,
-                SceneId = audioFile.Scene?.Id
+                CreatedAt = audioFile.CreatedAt
             };
         }
 
@@ -44,8 +42,16 @@ namespace Shared.Models.Extensions
 
         public static AudioFile ToAudioFileFromAssignDTO(this AudioFileAssignDTO assignDTO, AudioFile audioFile, Scene scene)
         {
-            audioFile.Scene = scene;
-            audioFile.Type = assignDTO.Type;
+            if (!audioFile.SceneAudioFiles.Any(sa => sa.SceneId == scene.Id && sa.Type == assignDTO.Type))
+            {
+                audioFile.SceneAudioFiles.Add(new SceneAudioFile
+                {
+                    SceneId = scene.Id,
+                    AudioFileId = audioFile.Id,
+                    Type = assignDTO.Type
+                });
+            }
+
             return audioFile;
         }
     }

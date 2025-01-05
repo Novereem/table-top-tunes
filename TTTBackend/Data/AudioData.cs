@@ -32,18 +32,21 @@ namespace TTTBackend.Data
                 .ToListAsync();
         }
 
-        public async Task<List<Scene>> GetScenesByUserIdAsync(Guid userId)
-        {
-            return await _context.Scenes
-                .Where(scene => scene.User.Id == userId)
-                .OrderBy(scene => scene.CreatedAt)
-                .Include(scene => scene.AudioFiles)
-                .ToListAsync();
-        }
-
         public async Task UpdateAudioFileAsync(AudioFile audioFile)
         {
-            _context.AudioFiles.Update(audioFile);
+            foreach (var sceneAudioFile in audioFile.SceneAudioFiles)
+            {
+                var existing = await _context.Set<SceneAudioFile>()
+                    .FirstOrDefaultAsync(sa => sa.SceneId == sceneAudioFile.SceneId
+                                               && sa.AudioFileId == sceneAudioFile.AudioFileId
+                                               && sa.Type == sceneAudioFile.Type);
+
+                if (existing == null)
+                {
+                    _context.Set<SceneAudioFile>().Add(sceneAudioFile);
+                }
+            }
+
             await _context.SaveChangesAsync();
         }
     }

@@ -12,11 +12,9 @@ namespace Shared.Models
     {
         public string Name { get; set; }
         public string FilePath { get; set; } = string.Empty;
-        public AudioType? Type { get; set; }
         public User User { get; set; }
         public Guid UserId { get; set; }
-        public Scene? Scene { get; set; }
-        public Guid? SceneId { get; set; }
+        public List<SceneAudioFile> SceneAudioFiles { get; set; } = new List<SceneAudioFile>();
         public DateTime CreatedAt { get; set; }
     }
 }

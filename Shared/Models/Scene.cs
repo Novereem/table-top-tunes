@@ -13,7 +13,7 @@ namespace Shared.Models
         public string Name { get; set; } = string.Empty;
         public User User { get; set; }
         public Guid UserId { get; set; }
-        public List<AudioFile> AudioFiles { get; set; } = new List<AudioFile>();
+        public List<SceneAudioFile> SceneAudioFiles { get; set; } = new List<SceneAudioFile>();
         public List<SoundPreset> SoundPresets { get; set; } = new List<SoundPreset>();
         public DateTime CreatedAt { get; set; }
     }
