@@ -9,6 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+//Make Tests run sequentially
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+
 namespace TTTBackend.Tests.Factories
 {
     public class CustomWebApplicationFactory : WebApplicationFactory<Program>

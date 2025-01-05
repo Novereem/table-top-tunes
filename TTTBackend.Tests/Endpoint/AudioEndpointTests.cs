@@ -9,16 +9,27 @@ using TTTBackend.Tests.Factories;
 using System.Net;
 using FluentAssertions;
 using Shared.Models;
+using Microsoft.Extensions.DependencyInjection;
+
 
 namespace TTTBackend.Tests.EndpointTests
 {
-    public class AudioEndpointTests : IClassFixture<CustomWebApplicationFactory>
+    public class AudioEndpointTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
+        private readonly ApplicationDbContext _db;
 
         public AudioEndpointTests(CustomWebApplicationFactory factory)
         {
             _client = factory.CreateClient();
+            var scope = factory.Services.CreateScope();
+            _db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        }
+
+        public void Dispose()
+        {
+            _db.Users.RemoveRange(_db.Users);
+            _db.SaveChanges();
         }
 
         [Fact]
@@ -31,7 +42,7 @@ namespace TTTBackend.Tests.EndpointTests
                 email = "testuser@example.com",
                 password = "TestPassword123!"
             };
-            await _client.PostAsJsonAsync("/api/Authentication/register", registrationDto);
+            var register = await _client.PostAsJsonAsync("/api/Authentication/register", registrationDto);
 
             var loginDto = new
             {
@@ -39,6 +50,8 @@ namespace TTTBackend.Tests.EndpointTests
                 password = "TestPassword123!"
             };
             var loginResponse = await _client.PostAsJsonAsync("/api/Authentication/login", loginDto);
+            string loginBody = await loginResponse.Content.ReadAsStringAsync();
+            Console.WriteLine($"Login Status: {loginResponse.StatusCode}, Body: {loginBody}");
             var apiResponse = await loginResponse.Content.ReadFromJsonAsync<ApiResponse<LoginResponseDTO>>();
             apiResponse.Should().NotBeNull();
             apiResponse!.Success.Should().BeTrue();

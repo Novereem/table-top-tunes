@@ -6,16 +6,26 @@ using FluentAssertions;
 using Shared.Models.Common;
 using Shared.Models.DTOs;
 using Shared.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TTTBackend.Tests.EndpointTests
 {
-    public class SceneEndpointTests : IClassFixture<CustomWebApplicationFactory>
+    public class SceneEndpointTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
+        private readonly ApplicationDbContext _db;
 
         public SceneEndpointTests(CustomWebApplicationFactory factory)
         {
             _client = factory.CreateClient();
+            var scope = factory.Services.CreateScope();
+            _db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        }
+
+        public void Dispose()
+        {
+            _db.Users.RemoveRange(_db.Users);
+            _db.SaveChanges();
         }
 
         [Fact]

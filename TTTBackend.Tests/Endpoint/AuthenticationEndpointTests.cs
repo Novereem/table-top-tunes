@@ -1,17 +1,27 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using TTTBackend.Tests.Factories;
 
 namespace TTTBackend.Tests.EndpointTests
 {
-    public class AuthenticationEndpointTests : IClassFixture<CustomWebApplicationFactory>
+    public class AuthenticationEndpointTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
+        private readonly ApplicationDbContext _db;
 
         public AuthenticationEndpointTests(CustomWebApplicationFactory factory)
         {
             _client = factory.CreateClient();
+            var scope = factory.Services.CreateScope();
+            _db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        }
+
+        public void Dispose()
+        {
+            _db.Users.RemoveRange(_db.Users);
+            _db.SaveChanges();
         }
 
         //Registering
